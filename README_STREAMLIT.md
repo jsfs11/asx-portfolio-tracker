@@ -59,11 +59,6 @@ streamlit run streamlit_app.py
 
 ## 🔧 Technical Features
 
-### **Non-Destructive Design**
-- All original CLI tools remain fully functional
-- Web interface imports existing modules
-- Same database, same analysis - just better UI
-- Zero disruption to current workflow
 
 ### **Modern UI Components**
 - Responsive design that works on all devices
@@ -170,12 +165,3 @@ Users just need to:
 | Sharing | Screenshots | Live demo |
 | Charts | Static files | Interactive |
 
-## 🚀 Next Steps
-
-1. **Test the interface** with your existing data
-2. **Share with others** using the setup instructions
-3. **Customize styling** by editing the CSS in streamlit_app.py
-4. **Add features** by extending the existing pages
-5. **Host online** using Streamlit Cloud for remote access
-
-The web interface provides all the power of CLI tools with a modern, user-friendly experience that's perfect for sharing with users who prefer point-and-click interfaces!
