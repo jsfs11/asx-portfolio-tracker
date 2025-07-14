@@ -1,6 +1,6 @@
 # 🚀 Streamlit Web Interface Setup
 
-## Quick Start for Mac Users
+## Quick Start
 
 ### 1. Install Dependencies
 ```bash
@@ -14,7 +14,7 @@ pip install streamlit plotly yfinance pandas numpy requests
 ### 2. Run the Web App
 ```bash
 # Navigate to the folder
-cd claude_p_trader
+cd asx-portfolio-tracker
 
 # Start the web interface
 streamlit run streamlit_app.py
@@ -77,10 +77,10 @@ streamlit run streamlit_app.py
 - Automatic data backup recommendations
 - Error handling with user-friendly messages
 
-## 🍎 Sharing with Your Dad
+## 🍎 Sharing Instructions
 
 ### **Installation Package**
-Create a simple setup for your dad:
+Create a simple setup package:
 
 1. **Create setup folder:**
 ```
@@ -104,7 +104,7 @@ streamlit run streamlit_app.py
 chmod +x run_app.command
 ```
 
-### **For Your Dad (Mac Instructions)**
+### **For Mac Users**
 1. Install Python 3.9+ (if not already installed)
 2. Open Terminal and run: `pip install streamlit plotly yfinance pandas numpy requests`
 3. Double-click `run_app.command` to start the app
@@ -120,7 +120,7 @@ EXPOSE 8501
 CMD ["streamlit", "run", "streamlit_app.py"]
 ```
 
-Your dad just needs to:
+Users just need to:
 1. Install Docker Desktop
 2. Run: `docker run -p 8501:8501 your-portfolio-app`
 3. Open browser to `localhost:8501`
@@ -173,9 +173,9 @@ Your dad just needs to:
 ## 🚀 Next Steps
 
 1. **Test the interface** with your existing data
-2. **Share with your dad** using the Mac instructions
+2. **Share with others** using the setup instructions
 3. **Customize styling** by editing the CSS in streamlit_app.py
 4. **Add features** by extending the existing pages
 5. **Host online** using Streamlit Cloud for remote access
 
-The web interface provides all the power of your CLI tools with a modern, user-friendly experience that's perfect for sharing with family members who prefer point-and-click interfaces!
+The web interface provides all the power of CLI tools with a modern, user-friendly experience that's perfect for sharing with users who prefer point-and-click interfaces!

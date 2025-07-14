@@ -48,12 +48,12 @@ git remote add origin https://github.com/yourusername/asx-portfolio-tracker.git
 git push -u origin main
 ```
 
-**Your dad's setup:**
+**User setup:**
 ```bash
 git clone https://github.com/yourusername/asx-portfolio-tracker.git
 cd asx-portfolio-tracker
 cp .env.example .env
-# Edit .env with his API key (or use 'demo')
+# Edit .env with your API key (or use 'demo')
 pip install -r requirements_streamlit.txt
 streamlit run streamlit_app.py
 ```
@@ -89,12 +89,12 @@ docker build -t asx-portfolio .
 # Save to file
 docker save asx-portfolio:latest | gzip > asx-portfolio.tar.gz
 
-# Your dad loads and runs:
+# User loads and runs:
 docker load < asx-portfolio.tar.gz
-docker run -e EODHD_API_KEY=his_key_here -p 8501:8501 asx-portfolio
+docker run -e EODHD_API_KEY=your_key_here -p 8501:8501 asx-portfolio
 ```
 
-## 🍎 Mac Setup for Your Dad
+## 🍎 Mac Setup Instructions
 
 ### **Simple Instructions:**
 1. **Install Python 3.9+** (if not already installed)
@@ -106,7 +106,7 @@ docker run -e EODHD_API_KEY=his_key_here -p 8501:8501 asx-portfolio
 3. **Set up API key:**
    ```bash
    cp .env.example .env
-   # Edit .env file and add: EODHD_API_KEY=his_key_here
+   # Edit .env file and add: EODHD_API_KEY=your_key_here
    ```
 4. **Install and run:**
    ```bash
@@ -114,7 +114,7 @@ docker run -e EODHD_API_KEY=his_key_here -p 8501:8501 asx-portfolio
    streamlit run streamlit_app.py
    ```
 
-### **Create run script for Dad:**
+### **Create run script:**
 ```bash
 #!/bin/bash
 # save as run_app.sh
@@ -148,9 +148,9 @@ Make executable: `chmod +x run_app.sh`
 3. **Clear instructions** for your dad
 4. **Demo mode** as fallback
 
-Your dad gets:
+Users get:
 - ✅ Easy setup process
-- ✅ His own API key (separate from yours)
+- ✅ Secure API key management
 - ✅ All latest features
 - ✅ No security concerns
 

@@ -20,14 +20,22 @@ A comprehensive Python-based portfolio tracking system for Australian Stock Exch
 ### Installation
 
 ```bash
-# Clone or download the files
-cd claude_p_trader
+# Clone the repository
+git clone https://github.com/yourusername/asx-portfolio-tracker.git
+cd asx-portfolio-tracker
+
+# Set up API key (optional)
+cp .env.example .env
+# Edit .env with your API key or leave as 'demo'
 
 # Install dependencies
-pip install -r requirements.txt
+pip install -r requirements_streamlit.txt
 
-# For enhanced visualization and ASX200 comparison (optional)
-pip install plotly yfinance kaleido
+# Run web interface
+streamlit run streamlit_app.py
+
+# Or use CLI tools
+python portfolio_dashboard.py
 ```
 
 ### Basic Usage
@@ -63,10 +71,11 @@ python3 portfolio_dashboard.py --export
 ### API Setup (Optional)
 
 1. Get a free EODHD API key from [eodhd.com](https://eodhd.com)
-2. Edit `config.py` and replace `"demo"` with your actual API key:
+2. Copy `.env.example` to `.env` and add your API key:
 
-```python
-EODHD_API_KEY = "your_actual_api_key_here"
+```bash
+cp .env.example .env
+# Edit .env and add: EODHD_API_KEY=your_actual_key_here
 ```
 
 **Note**: The system uses sample/stored prices by default. EODHD API is only called when using `--update` flag.
@@ -78,43 +87,34 @@ Default Australian brokerage structure (configurable in `config.py`):
 - Rate: 0.1% of transaction value
 - Fee applied: `max(transaction_value × 0.001, 19.95)`
 
-## Your Portfolio
+## Getting Started
 
-Your current holdings from $25,000 AUD starting capital:
+### First Time Setup
 
-| Stock | Company | Shares | Purchase Price | Total Cost |
-|-------|---------|---------|---------------|------------|
-| WAX   | Warnex Mining | 872 | $1.175 | $1,044.55 |
-| WAM   | WAM Capital | 910 | $1.63 | $1,503.25 |
-| HLI   | Helloworld Travel | 349 | $4.97 | $1,754.48 |
-| YMAX  | Ymax Group | 260 | $7.69 | $2,019.35 |
-| WOW   | Woolworths | 40 | $31.16 | $1,266.35 |
-| CBA   | Commonwealth Bank | 8 | $180.37 | $1,462.91 |
-| CSL   | CSL Limited | 8 | $242.41 | $1,959.23 |
-| LNW   | LendLease | 13 | $152.16 | $1,998.03 |
-| DTR   | DTek Resources | 16,580 | $0.089 | $1,495.57 |
-| SDR   | SiteOne Landscape | 562 | $4.44 | $2,515.23 |
-| BHP   | BHP Group | 65 | $38.3 | $2,509.45 |
-| NXT   | NextDC | 192 | $13.59 | $2,629.23 |
-| XRO   | Xero | 16 | $176.33 | $2,841.23 |
+1. **Clone the repository**
+2. **Set up API key** (optional - uses demo mode by default)
+3. **Install dependencies**
+4. **Add your first transaction**
 
-**Total Invested**: ~$24,998.86 + $259.35 fees = $25,258.21
+The system includes sample data to demonstrate functionality. You can clear this and add your own transactions using the CLI or web interface.
 
 ## File Structure
 
 ```
-claude_p_trader/
-├── portfolio_tracker.py     # Core portfolio tracking logic
-├── dividend_tracker.py      # Dividend analysis and tracking
-├── portfolio_dashboard.py   # Command-line interface
-├── portfolio_vs_asx200.py   # Portfolio vs ASX200 comparison chart
-├── config.py               # Configuration settings
-├── sample_prices.py        # Sample prices for demo mode
-├── bar.py                  # Portfolio visualization charts
-├── bar2.py                 # Enhanced portfolio bar charts
-├── requirements.txt        # Python dependencies
-├── README.md              # This file
-└── portfolio.db           # SQLite database (created automatically)
+asx-portfolio-tracker/
+├── portfolio_tracker.py       # Core portfolio tracking logic
+├── dividend_tracker.py        # Dividend analysis and tracking
+├── portfolio_dashboard.py     # Command-line interface
+├── portfolio_vs_asx200.py     # Portfolio vs ASX200 comparison
+├── performance_attribution.py # Stock contribution analysis
+├── rolling_performance.py     # Rolling performance metrics
+├── streamlit_app.py           # Web interface (main)
+├── streamlit_utils.py         # Web interface utilities
+├── config.py                  # Configuration settings
+├── requirements_streamlit.txt # Dependencies for web interface
+├── .env.example              # API key template
+├── .gitignore                # Git ignore file
+└── README.md                 # This file
 ```
 
 ## Key Components
@@ -235,9 +235,9 @@ Date,Stock,Action,Quantity,Price,Total,Status
 - **🏢 Sector Analysis**: Industry allocation vs ASX200 sectors
 
 ### Current Status
-- ✅ **Completed**: Portfolio vs ASX200 comparison, Force API updates
-- 🔄 **In Progress**: Documentation updates, code organization
-- 📋 **Next**: Date alignment fixes, dividend integration
+- ✅ **Completed**: Full feature set with web interface
+- ✅ **Available**: CLI tools and Streamlit web app
+- 🔄 **Ongoing**: Community feedback and enhancements
 
 ### Dependencies
 - **Short-term**: Standard Python libraries (pandas, numpy, sqlite3)
@@ -262,10 +262,10 @@ The system generates several types of charts and visualizations:
 ## Troubleshooting
 
 ### API Issues
-- Verify API key in `config.py`
+- Verify API key in `.env` file
 - Check daily API call limit (20/day for free EODHD)
 - Use `--force` flag to bypass API limits when needed
-- Sample prices used when API unavailable
+- Demo mode works without API key
 
 ### Visualization Issues
 - Install plotly and dependencies: `pip install plotly yfinance kaleido`
