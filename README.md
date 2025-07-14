@@ -213,37 +213,6 @@ Date,Stock,Action,Quantity,Price,Total,Status
 2025-07-11,CBA,sell,4,185.00,740.00,executed
 ```
 
-## Development Roadmap
-
-### Phase 1: Data Accuracy & Core Fixes (Week 1-2)
-- **🔧 Date Alignment**: Fix ASX200 vs portfolio data synchronization
-- **💰 Dividend Integration**: Include dividend payments in total returns
-- **📊 Transaction Costs**: Factor brokerage fees into performance calculations
-- **📈 Enhanced Visualization**: Improved chart styling and annotations
-
-### Phase 2: Risk Analytics & Attribution (Week 3-4)
-- **📊 Risk Metrics**: Sharpe ratio, maximum drawdown, beta calculation
-- **🎯 Performance Attribution**: Stock-level contribution analysis
-- **📈 Rolling Windows**: 1D, 1W, 1M performance comparisons
-- **📊 Drawdown Charts**: Visualize portfolio decline periods
-
-### Phase 3: Advanced Features (Month 2+)
-- **🌐 Additional Data Sources**: Google Finance, broker API integrations
-- **🏦 Franking Credits**: Full Australian tax credit tracking
-- **⚠️ Risk Alerts**: Price and volatility alerts
-- **📱 Web Interface**: Browser-based dashboard
-- **🏢 Sector Analysis**: Industry allocation vs ASX200 sectors
-
-### Current Status
-- ✅ **Completed**: Full feature set with web interface
-- ✅ **Available**: CLI tools and Streamlit web app
-- 🔄 **Ongoing**: Community feedback and enhancements
-
-### Dependencies
-- **Short-term**: Standard Python libraries (pandas, numpy, sqlite3)
-- **Medium-term**: Enhanced visualization (plotly, matplotlib)
-- **Long-term**: Web framework (Flask/FastAPI), advanced analytics libraries
-
 ## Visualization Outputs
 
 The system generates several types of charts and visualizations:
