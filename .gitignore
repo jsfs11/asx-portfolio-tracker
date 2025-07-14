@@ -1,0 +1,46 @@
+# API Keys and Sensitive Data
+.env
+config.py
+
+# Database Files (optional - depends if you want to share sample data)
+portfolio.db
+*.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Generated files
+*.png
+*.html
+*.csv
+*export_*
+*attribution_*
+*rolling_*
+*portfolio_vs_*
+
+# Temporary files
+*.tmp
+*.temp
