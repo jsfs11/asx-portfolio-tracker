@@ -232,53 +232,6 @@ YYYY-MM-DD,STOCK,sell,50,XX.XX,XXXX.XX,executed
 - Configurable fee structures and calculations
 - API abstraction for multiple data providers
 
-## Visualization Outputs
-
-The system generates professional charts and reports:
-
-### Performance Analysis
-- **Interactive HTML**: Timestamped HTML files with full interactivity
-- **Static PNG**: High-resolution images for reports and presentations
-- **Performance Metrics**: Comprehensive performance calculations
-- **Risk Analysis**: Sharpe ratio, volatility, and drawdown metrics
-
-### Portfolio Charts
-- **Holdings Overview**: Position sizes and allocation breakdowns
-- **Performance Attribution**: Individual stock contribution analysis
-- **Interactive Features**: Hover details, zoom, pan functionality
-- **Export Ready**: Multiple formats for reporting and sharing
-
-## Troubleshooting
-
-### API Issues
-- Verify API key in `.env` file
-- Check daily API call limit (20/day for free EODHD)
-- Use `--force` flag to bypass API limits when needed
-- Demo mode works without API key
-
-### Visualization Issues
-- Install plotly and dependencies: `pip install plotly yfinance kaleido`
-- Check that charts are saved to current directory
-- Verify browser can open HTML files for interactive charts
-
-### Database Issues
-- Delete `portfolio.db` to reset database
-- Check SQLite installation
-- Verify transaction data integrity
-
-### Import Errors
-- Verify CSV format matches expected structure
-- Check transaction data for correct data types
-- Ensure numeric values don't contain currency symbols
-
-## License
-
-MIT License - see LICENSE file for details.
-
-**Disclaimer**: This software is for educational and informational purposes only. It is not intended as financial advice. Always verify data independently and consult with qualified financial professionals before making investment decisions.
-
-## Contributing
-
 Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
 
 ### Development Setup
@@ -294,3 +247,6 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 - 🐛 Report bugs via GitHub Issues
 - 💡 Request features via GitHub Issues
 - 💬 Join discussions in GitHub Discussions
+=======
+Feel free to submit issues and enhancement requests. This is a paper trading tool for learning purposes.
+>>>>>>> 2eaaebfb8b14e0636d0b633b83b3138aebecd3b5
