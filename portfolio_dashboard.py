@@ -25,6 +25,8 @@ def print_portfolio_summary(tracker: ASXPortfolioTracker, show_details: bool = F
     print("PORTFOLIO OVERVIEW:")
     print(f"  Total Cost Basis:     ${summary['total_cost']:>12,.2f}")
     print(f"  Current Market Value: ${summary['total_market_value']:>12,.2f}")
+    print(f"  Cash Balance:         ${summary['cash_balance']:>12,.2f}")
+    print(f"  Total Portfolio:      ${summary['total_portfolio_value']:>12,.2f}")
     print(f"  Total Fees Paid:      ${summary['total_fees']:>12,.2f}")
     print(f"  Unrealized P&L:       ${summary['total_unrealized_pnl']:>12,.2f}")
     

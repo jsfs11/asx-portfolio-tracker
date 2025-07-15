@@ -40,8 +40,9 @@ class Position:
 
 
 class ASXPortfolioTracker:
-    def __init__(self, db_path: str = "portfolio.db"):
+    def __init__(self, db_path: str = "portfolio.db", starting_cash: float = 25000.0):
         self.db_path = db_path
+        self.starting_cash = starting_cash
         self.init_database()
         self.api_calls_today = 0
         self.last_api_reset = datetime.now().date()
@@ -358,6 +359,34 @@ class ASXPortfolioTracker:
         
         return result[0] if result else None
     
+    def calculate_cash_balance(self) -> float:
+        """Calculate cash balance from all transactions starting with initial cash"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT action, total, fees
+            FROM transactions 
+            WHERE status = 'executed'
+            ORDER BY date ASC
+        ''')
+        
+        transactions = cursor.fetchall()
+        conn.close()
+        
+        # Start with initial cash balance
+        cash_balance = self.starting_cash
+        
+        for action, total, fees in transactions:
+            if action == 'buy':
+                # Subtract money spent (total + fees)
+                cash_balance -= (total + fees)
+            elif action == 'sell':
+                # Add money received (total - fees)
+                cash_balance += (total - fees)
+        
+        return cash_balance
+    
     def get_portfolio_summary(self, api_key: str = "demo", use_api: bool = False, force: bool = False) -> Dict:
         """Get complete portfolio summary"""
         positions = self.update_current_prices(api_key, use_api, force)
@@ -373,12 +402,20 @@ class ASXPortfolioTracker:
         total_fees = cursor.fetchone()[0] or 0.0
         conn.close()
         
+        # Calculate cash balance
+        cash_balance = self.calculate_cash_balance()
+        
+        # Calculate total portfolio value (stocks + cash)
+        total_portfolio_value = total_market_value + cash_balance
+        
         return {
             'positions': positions,
             'total_cost': total_cost,
             'total_market_value': total_market_value,
             'total_unrealized_pnl': total_unrealized_pnl,
             'total_fees': total_fees,
+            'cash_balance': cash_balance,
+            'total_portfolio_value': total_portfolio_value,
             'return_percentage': (total_unrealized_pnl / total_cost * 100) if total_cost > 0 else 0,
             'api_calls_used': self.api_calls_today,
             'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')

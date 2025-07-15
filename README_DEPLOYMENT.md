@@ -1,4 +1,4 @@
-# 🚀 Secure Deployment Guide
+# 🚀 Deployment Guide
 
 ## 🔐 API Key Security
 
@@ -94,9 +94,9 @@ docker load < asx-portfolio.tar.gz
 docker run -e EODHD_API_KEY=your_key_here -p 8501:8501 asx-portfolio
 ```
 
-## 🍎 Mac Setup Instructions
+## 💻 Cross-Platform Setup
 
-### **Simple Instructions:**
+### **macOS/Linux Instructions:**
 1. **Install Python 3.9+** (if not already installed)
 2. **Clone the repository:**
    ```bash
@@ -145,7 +145,7 @@ Make executable: `chmod +x run_app.sh`
 
 1. **GitHub Repository** (public code, private keys)
 2. **Environment variables** for API keys
-3. **Clear instructions** for your dad
+3. **Clear documentation** for users
 4. **Demo mode** as fallback
 
 Users get:

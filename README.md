@@ -1,19 +1,19 @@
-# ASX Paper Trading Portfolio Tracker
+# ASX Portfolio Tracker
 
-A comprehensive Python-based portfolio tracking system for Australian Stock Exchange (ASX) paper trading, featuring real-time price updates, dividend tracking, fee calculations, and performance analytics.
+A comprehensive Python-based portfolio tracking system for Australian Stock Exchange (ASX) investments, featuring real-time price updates, dividend tracking, fee calculations, and performance analytics with both CLI and web interfaces.
 
 ## Features
 
 - 📊 **Portfolio Tracking**: Track multiple ASX stock positions with cost basis and P&L
-- 💰 **Fee Calculation**: Automatic brokerage fee calculation (minimum $19.95 + 0.1%)
-- 📈 **Real-time Prices**: EODHD API integration with fallback sample prices
-- 💵 **Dividend Tracking**: Monitor dividend yields and estimated annual income
-- 📱 **Command Line Interface**: Easy-to-use CLI with multiple viewing options
+- 💰 **Fee Calculation**: Automatic brokerage fee calculation
+- 📈 **Real-time Prices**: EODHD API integration with demo mode fallback
+- 💵 **Dividend Tracking**: Monitor dividend yields and estimated income
+- 📱 **Dual Interface**: Command line tools and modern web interface
 - 💾 **Data Persistence**: SQLite database for transaction and price history
 - 📤 **Export Functionality**: CSV export for portfolio and transaction data
-- 📊 **Performance Comparison**: Portfolio vs ASX200 benchmark analysis with interactive charts
-- 🎯 **Force API Updates**: Bypass daily API limits for fresh data when needed
-- 📈 **Advanced Visualization**: Plotly-based interactive charts with performance metrics
+- 📊 **Performance Analysis**: Advanced analytics and risk metrics
+- 📈 **Interactive Charts**: Plotly-based visualizations with export capabilities
+- 🔒 **Secure Configuration**: Environment-based API key management
 
 ## Quick Start
 
@@ -56,7 +56,7 @@ python3 portfolio_dashboard.py --update
 # Force API update even if daily limit reached
 python3 portfolio_dashboard.py --update --force
 
-# Generate portfolio vs ASX200 performance comparison chart
+# Generate performance analysis charts
 python3 portfolio_vs_asx200.py
 
 # Add new transaction interactively
@@ -82,10 +82,10 @@ cp .env.example .env
 
 ### Brokerage Fees
 
-Default Australian brokerage structure (configurable in `config.py`):
-- Minimum fee: $19.95 per trade
-- Rate: 0.1% of transaction value
-- Fee applied: `max(transaction_value × 0.001, 19.95)`
+Configurable brokerage fee structure:
+- Supports minimum fee + percentage models
+- Default Australian brokerage calculations
+- Customizable via configuration files
 
 ## Getting Started
 
@@ -138,12 +138,12 @@ asx-portfolio-tracker/
 - Data export functionality
 - Force API update capability
 
-### Portfolio vs ASX200 Comparison
-- Real-time ASX200 index data via yfinance
-- Portfolio performance vs market benchmark
+### Performance Analysis
+- Portfolio performance tracking over time
 - Interactive plotly charts (HTML + PNG output)
 - Risk-adjusted performance metrics
-- Fallback to weighted ASX proxy using major stocks
+- Attribution analysis for individual stocks
+- Rolling performance windows
 
 ## API Sources
 
@@ -153,48 +153,46 @@ asx-portfolio-tracker/
 - **Endpoint**: `https://eodhd.com/api/real-time/`
 
 ### Secondary: yfinance
-- **ASX200 Index Data**: ^AXJO symbol for market benchmark
+- **Market Data**: Additional market data access
 - **Free**: No API limits or registration required
 - **Reliable**: Yahoo Finance data feed
 - **Format**: Standard ticker symbols
 
 ### Fallback Options
 1. Stored price history from previous API calls
-2. Weighted ASX proxy using major portfolio stocks
-3. Sample prices for demo/development
+2. Demo mode with sample data
+3. Cached data for offline analysis
 
 ## Sample Output
 
 ```
 ============================================================
-           ASX PAPER TRADING PORTFOLIO
+           ASX PORTFOLIO TRACKER
 ============================================================
-Last Updated: 2025-07-11 19:58:49
-API Calls Used Today: 0/20
+Last Updated: 2025-07-15 10:30:15
+API Calls Used Today: 5/20
 
 PORTFOLIO OVERVIEW:
-  Total Cost Basis:     $   25,258.21
-  Current Market Value: $   25,280.74
-  Total Fees Paid:      $      259.35
-  Unrealized P&L:       $       22.53
-  Total Return:                0.09% 📈
+  Total Cost Basis:     $   XX,XXX.XX
+  Current Market Value: $   XX,XXX.XX
+  Total Fees Paid:      $      XXX.XX
+  Unrealized P&L:       $      XXX.XX
+  Total Return:                X.XX% 📈
 
 INDIVIDUAL POSITIONS:
 Stock  Qty    Avg Cost   Current    Market Val   P&L          P&L %   
 ----------------------------------------------------------------------
-WAX    872    $1.2208    $1.1800    $1028.96     $-35.54      -3.34  % 🔴
-WAM    910    $1.6738    $1.6500    $1501.50     $-21.70      -1.42  % 🔴
+XXXX   XXX    $X.XXXX    $X.XXXX    $XXXX.XX     $XXX.XX      X.XX % 🟢
+XXXX   XXX    $X.XXXX    $X.XXXX    $XXXX.XX     $XXX.XX      X.XX % 🔴
 ...
 
 DIVIDEND ANALYSIS:
 ------------------------------------------------------------
-WAM    Yield:  2.12%  Est. Annual: $   31.85
-WOW    Yield:  1.71%  Est. Annual: $   22.00
-CBA    Yield:  1.30%  Est. Annual: $   19.20
-BHP    Yield:  4.86%  Est. Annual: $  123.50
+XXXX   Yield:  X.XX%  Est. Annual: $   XX.XX
+XXXX   Yield:  X.XX%  Est. Annual: $   XX.XX
 
-Total Estimated Annual Dividends: $196.55
-Portfolio Dividend Yield: 0.78%
+Total Estimated Annual Dividends: $XXX.XX
+Portfolio Dividend Yield: X.XX%
 ```
 
 ## Adding Transactions
@@ -205,59 +203,50 @@ python3 portfolio_dashboard.py --add
 ```
 
 ### Via CSV Import
-Modify the CSV data in `portfolio_dashboard.py` or create your own CSV file:
+Create a CSV file with your transaction data:
 
 ```csv
 Date,Stock,Action,Quantity,Price,Total,Status
-2025-07-11,BHP,buy,100,39.50,3950.00,executed
-2025-07-11,CBA,sell,4,185.00,740.00,executed
+YYYY-MM-DD,STOCK,buy,100,XX.XX,XXXX.XX,executed
+YYYY-MM-DD,STOCK,sell,50,XX.XX,XXXX.XX,executed
 ```
 
-## Development Roadmap
+## Architecture
 
-### Phase 1: Data Accuracy & Core Fixes (Week 1-2)
-- **🔧 Date Alignment**: Fix ASX200 vs portfolio data synchronization
-- **💰 Dividend Integration**: Include dividend payments in total returns
-- **📊 Transaction Costs**: Factor brokerage fees into performance calculations
-- **📈 Enhanced Visualization**: Improved chart styling and annotations
+### Core Components
+- **Data Layer**: SQLite database for transactions and price history
+- **Analysis Engine**: Portfolio calculations and performance metrics
+- **Visualization**: Interactive charts and reports
+- **Interfaces**: CLI tools and web dashboard
 
-### Phase 2: Risk Analytics & Attribution (Week 3-4)
-- **📊 Risk Metrics**: Sharpe ratio, maximum drawdown, beta calculation
-- **🎯 Performance Attribution**: Stock-level contribution analysis
-- **📈 Rolling Windows**: 1D, 1W, 1M performance comparisons
-- **📊 Drawdown Charts**: Visualize portfolio decline periods
+### Technology Stack
+- **Backend**: Python 3.9+, SQLite
+- **Data**: pandas, numpy for calculations
+- **Charts**: Plotly for interactive visualizations
+- **Web UI**: Streamlit for modern interface
+- **APIs**: EODHD, yfinance for market data
 
-### Phase 3: Advanced Features (Month 2+)
-- **🌐 Additional Data Sources**: Google Finance, broker API integrations
-- **🏦 Franking Credits**: Full Australian tax credit tracking
-- **⚠️ Risk Alerts**: Price and volatility alerts
-- **📱 Web Interface**: Browser-based dashboard
-- **🏢 Sector Analysis**: Industry allocation vs ASX200 sectors
-
-### Current Status
-- ✅ **Completed**: Full feature set with web interface
-- ✅ **Available**: CLI tools and Streamlit web app
-- 🔄 **Ongoing**: Community feedback and enhancements
-
-### Dependencies
-- **Short-term**: Standard Python libraries (pandas, numpy, sqlite3)
-- **Medium-term**: Enhanced visualization (plotly, matplotlib)
-- **Long-term**: Web framework (Flask/FastAPI), advanced analytics libraries
+### Extensibility
+- Modular design for easy feature additions
+- Plugin architecture for new data sources
+- Configurable fee structures and calculations
+- API abstraction for multiple data providers
 
 ## Visualization Outputs
 
-The system generates several types of charts and visualizations:
+The system generates professional charts and reports:
 
-### Portfolio vs ASX200 Comparison
-- **Interactive HTML**: `portfolio_vs_asx200_YYYYMMDD_HHMMSS.html`
-- **Static PNG**: `portfolio_vs_asx200_YYYYMMDD_HHMMSS.png`
-- **Performance Metrics**: Outperformance calculation, volatility comparison
-- **Risk-adjusted Analysis**: Sharpe ratio, maximum drawdown (when sufficient data)
+### Performance Analysis
+- **Interactive HTML**: Timestamped HTML files with full interactivity
+- **Static PNG**: High-resolution images for reports and presentations
+- **Performance Metrics**: Comprehensive performance calculations
+- **Risk Analysis**: Sharpe ratio, volatility, and drawdown metrics
 
-### Portfolio Holdings Charts
-- **Market Value Bar Chart**: `portfolio_holdings_bar.png`
-- **Interactive Plotly Charts**: Hover details, zoom, pan functionality
-- **Export Ready**: High-resolution PNG for reports
+### Portfolio Charts
+- **Holdings Overview**: Position sizes and allocation breakdowns
+- **Performance Attribution**: Individual stock contribution analysis
+- **Interactive Features**: Hover details, zoom, pan functionality
+- **Export Ready**: Multiple formats for reporting and sharing
 
 ## Troubleshooting
 
@@ -284,8 +273,24 @@ The system generates several types of charts and visualizations:
 
 ## License
 
-This project is for educational/personal use. Please verify any stock prices and dividend data independently before making investment decisions.
+MIT License - see LICENSE file for details.
+
+**Disclaimer**: This software is for educational and informational purposes only. It is not intended as financial advice. Always verify data independently and consult with qualified financial professionals before making investment decisions.
 
 ## Contributing
 
-Feel free to submit issues and enhancement requests. This is a paper trading tool for learning purposes.
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+
+### Development Setup
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## Support
+
+- 📚 Check the documentation in the `/docs` folder
+- 🐛 Report bugs via GitHub Issues
+- 💡 Request features via GitHub Issues
+- 💬 Join discussions in GitHub Discussions
