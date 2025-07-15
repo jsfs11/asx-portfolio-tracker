@@ -247,6 +247,5 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 - 🐛 Report bugs via GitHub Issues
 - 💡 Request features via GitHub Issues
 - 💬 Join discussions in GitHub Discussions
-=======
+
 Feel free to submit issues and enhancement requests. This is a paper trading tool for learning purposes.
->>>>>>> 2eaaebfb8b14e0636d0b633b83b3138aebecd3b5
