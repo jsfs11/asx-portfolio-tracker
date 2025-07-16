@@ -77,7 +77,7 @@ st.markdown("""
 st.sidebar.title("Navigation")
 page = st.sidebar.selectbox(
     "Choose a page",
-    ["🏠 Dashboard", "💰 Add Transaction", "📈 Update Prices", "📊 Performance Analysis", "⚙️ Settings"]
+    ["🏠 Dashboard", "💰 Add Transaction", "📈 Update Prices", "📊 Performance Analysis", "🏛️ Franking Credits", "🧮 Tax Calculator", "⚙️ Settings"]
 )
 
 # Main header
@@ -125,6 +125,43 @@ if page == "🏠 Dashboard":
                 f"{summary['api_calls_used']}/20",
                 delta=api_status
             )
+        
+        # Franking Credits section (if available)
+        try:
+            from franking_calculator import FrankingTaxCalculator, StaticFrankingDatabase
+            franking_available = True
+        except ImportError:
+            franking_available = False
+        
+        if franking_available:
+            st.subheader("💰 Franking Credits Overview")
+            
+            # Initialize tracker for franking analysis
+            tracker = ASXPortfolioTracker()
+            
+            # Get franking summary with updated positions
+            franking_summary = tracker.get_franking_summary()
+            
+            if franking_summary and 'stock_details' in franking_summary:
+                fcol1, fcol2, fcol3 = st.columns(3)
+                
+                with fcol1:
+                    st.metric(
+                        "Annual Franking Credits",
+                        f"${franking_summary.get('total_franking_credits', 0):,.2f}"
+                    )
+                
+                with fcol2:
+                    st.metric(
+                        "Tax Benefit",
+                        f"${franking_summary.get('tax_benefit', 0):,.2f}"
+                    )
+                
+                with fcol3:
+                    st.metric(
+                        "Franking Efficiency",
+                        f"{franking_summary.get('franking_efficiency', 0):.1f}%"
+                    )
         
         # Charts row
         col1, col2 = st.columns(2)
@@ -406,6 +443,212 @@ elif page == "📊 Performance Analysis":
                     
             except Exception as e:
                 st.error(f"Export error: {str(e)}")
+
+# Franking Credits Page
+elif page == "🏛️ Franking Credits":
+    st.header("Franking Credits Analysis")
+    
+    # Initialize tracker
+    tracker = ASXPortfolioTracker()
+    
+    # Check if franking is available
+    try:
+        from franking_calculator import FrankingTaxCalculator, StaticFrankingDatabase
+        franking_available = True
+    except ImportError:
+        franking_available = False
+        st.error("Franking calculator not available. Please install required dependencies.")
+    
+    if franking_available:
+        # Get portfolio summary with franking
+        summary = tracker.get_portfolio_summary()
+        
+        if not summary['positions']:
+            st.warning("No portfolio data found. Please add some transactions to get started!")
+        else:
+            # Franking overview metrics
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                franking_credits = summary.get('franking_credits', 0)
+                st.metric("Annual Franking Credits", f"${franking_credits:,.2f}")
+            
+            with col2:
+                tax_benefit = summary.get('tax_benefit', 0)
+                st.metric("Tax Benefit", f"${tax_benefit:,.2f}")
+            
+            with col3:
+                franking_efficiency = summary.get('franking_efficiency', 0)
+                st.metric("Franking Efficiency", f"{franking_efficiency:.1f}%")
+            
+            with col4:
+                effective_tax_rate = summary.get('effective_tax_rate', 0)
+                st.metric("Effective Tax Rate", f"{effective_tax_rate:.1f}%")
+            
+            # Detailed franking analysis
+            st.subheader("Stock-by-Stock Franking Analysis")
+            
+            # Get detailed franking data
+            franking_details = tracker.get_franking_summary()
+            
+            if franking_details and 'stock_details' in franking_details:
+                # Create dataframe for display
+                franking_data = []
+                for stock in franking_details['stock_details']:
+                    franking_data.append({
+                        'Stock': stock['stock'],
+                        'Franking Rate': f"{stock['franking_rate']:.0f}%",
+                        'Market Value': f"${stock['market_value']:,.2f}",
+                        'Annual Franking Credits': f"${stock['franking_credit']:,.2f}",
+                        'Effective Yield': f"{stock['effective_yield']:.2f}%",
+                        'Sector': stock.get('sector', 'Unknown')
+                    })
+                
+                df = pd.DataFrame(franking_data)
+                st.dataframe(df, use_container_width=True)
+                
+                # Add franking credits charts
+                st.subheader("Franking Credits Visualization")
+                
+                # Charts row
+                chart_col1, chart_col2 = st.columns(2)
+                
+                with chart_col1:
+                    # Import chart functions
+                    from streamlit_utils import create_franking_credits_chart
+                    franking_chart = create_franking_credits_chart(franking_details)
+                    if franking_chart:
+                        st.plotly_chart(franking_chart, use_container_width=True)
+                
+                with chart_col2:
+                    # Import sector chart function
+                    from streamlit_utils import create_franking_by_sector_chart
+                    sector_chart = create_franking_by_sector_chart(franking_details)
+                    if sector_chart:
+                        st.plotly_chart(sector_chart, use_container_width=True)
+            
+            # Franking optimization suggestions
+            st.subheader("Optimization Suggestions")
+            
+            # Tax income input for optimization
+            col1, col2 = st.columns(2)
+            with col1:
+                taxable_income = st.number_input("Taxable Income", min_value=0, value=85000, step=1000)
+            
+            with col2:
+                if st.button("Get Optimization Suggestions"):
+                    suggestions = tracker.get_franking_optimization_suggestions(taxable_income)
+                    
+                    if suggestions:
+                        for suggestion in suggestions:
+                            message = suggestion.get('message', str(suggestion))
+                            st.info(f"💡 {message}")
+                    else:
+                        st.success("Your portfolio is already well-optimized for franking credits!")
+
+# Tax Calculator Page
+elif page == "🧮 Tax Calculator":
+    st.header("Tax Calculator")
+    
+    # Initialize tracker
+    tracker = ASXPortfolioTracker()
+    
+    # Check if franking is available
+    try:
+        from franking_calculator import FrankingTaxCalculator, StaticFrankingDatabase
+        franking_available = True
+    except ImportError:
+        franking_available = False
+        st.error("Franking calculator not available. Please install required dependencies.")
+    
+    if franking_available:
+        st.subheader("Tax Settings")
+        
+        # Get current tax settings
+        current_settings = tracker.get_tax_settings()
+        
+        # Tax configuration form
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            tax_year = st.selectbox("Tax Year", ["2024-25", "2023-24"], index=0)
+            taxable_income = st.number_input("Taxable Income", min_value=0, value=current_settings['taxable_income'], step=1000)
+            is_resident = st.checkbox("Australian Tax Resident", value=current_settings['is_resident'])
+        
+        with col2:
+            medicare_levy = st.number_input("Medicare Levy (%)", min_value=0.0, max_value=10.0, value=current_settings['medicare_levy'], step=0.1)
+            
+            if st.button("Save Tax Settings"):
+                new_settings = {
+                    'tax_year': tax_year,
+                    'taxable_income': taxable_income,
+                    'tax_bracket': 32.5,  # Will be calculated based on income
+                    'medicare_levy': medicare_levy,
+                    'is_resident': is_resident
+                }
+                
+                tracker.save_tax_settings(new_settings)
+                st.success("Tax settings saved successfully!")
+                st.rerun()
+        
+        # Tax calculation results
+        if taxable_income > 0:
+            st.subheader("Tax Calculation Results")
+            
+            # Get franking analysis with current settings
+            franking_analysis = tracker.get_franking_summary(taxable_income)
+            
+            if franking_analysis:
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    st.metric("Total Tax Payable", f"${franking_analysis.get('total_tax', 0):,.2f}")
+                
+                with col2:
+                    st.metric("Franking Credits", f"${franking_analysis.get('total_franking_credits', 0):,.2f}")
+                
+                with col3:
+                    st.metric("Net Tax After Franking", f"${franking_analysis.get('net_tax', 0):,.2f}")
+                
+                # Tax breakdown
+                st.subheader("Tax Breakdown")
+                
+                # Calculate tax brackets
+                tax_brackets = [
+                    (0, 18200, 0),
+                    (18201, 45000, 19),
+                    (45001, 120000, 32.5),
+                    (120001, 180000, 37),
+                    (180001, float('inf'), 45)
+                ]
+                
+                tax_breakdown = []
+                remaining_income = taxable_income
+                
+                for min_income, max_income, rate in tax_brackets:
+                    if remaining_income <= 0:
+                        break
+                    
+                    if taxable_income > min_income:
+                        taxable_in_bracket = min(remaining_income, max_income - min_income + 1)
+                        if min_income == 0:
+                            taxable_in_bracket = min(remaining_income, max_income)
+                        
+                        tax_in_bracket = taxable_in_bracket * rate / 100
+                        
+                        if taxable_in_bracket > 0:
+                            tax_breakdown.append({
+                                'Tax Bracket': f"${min_income:,} - ${max_income:,}" if max_income != float('inf') else f"${min_income:,}+",
+                                'Rate': f"{rate}%",
+                                'Taxable Income': f"${taxable_in_bracket:,.2f}",
+                                'Tax': f"${tax_in_bracket:,.2f}"
+                            })
+                        
+                        remaining_income -= taxable_in_bracket
+                
+                if tax_breakdown:
+                    df_tax = pd.DataFrame(tax_breakdown)
+                    st.dataframe(df_tax, use_container_width=True)
 
 # Settings Page
 elif page == "⚙️ Settings":

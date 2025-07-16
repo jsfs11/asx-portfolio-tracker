@@ -2,6 +2,7 @@
 """
 ASX Paper Trading Portfolio Tracker
 Tracks portfolio performance with real-time prices, dividends, and fees
+Enhanced with franking credit analysis for Australian investors
 """
 
 import csv
@@ -13,6 +14,14 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass, asdict
 import time
+
+# Import franking calculator
+try:
+    from franking_calculator import FrankingTaxCalculator, StaticFrankingDatabase, get_yahoo_dividend_data
+    FRANKING_AVAILABLE = True
+except ImportError:
+    print("Warning: Franking calculator not available. Some features may be limited.")
+    FRANKING_AVAILABLE = False
 
 
 @dataclass
@@ -51,6 +60,14 @@ class ASXPortfolioTracker:
         self.min_brokerage = 19.95
         self.brokerage_rate = 0.001  # 0.1%
         
+        # Initialize franking calculator if available
+        if FRANKING_AVAILABLE:
+            self.franking_calculator = FrankingTaxCalculator(self.db_path)
+            self.franking_db = StaticFrankingDatabase()
+        else:
+            self.franking_calculator = None
+            self.franking_db = None
+        
     def init_database(self):
         """Initialize SQLite database with required tables"""
         conn = sqlite3.connect(self.db_path)
@@ -83,14 +100,41 @@ class ASXPortfolioTracker:
             )
         ''')
         
-        # Dividends table
+        # Enhanced dividends table with franking information
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS dividends (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 stock TEXT NOT NULL,
                 ex_date TEXT NOT NULL,
                 amount REAL NOT NULL,
-                currency TEXT DEFAULT 'AUD'
+                currency TEXT DEFAULT 'AUD',
+                franking_credit REAL DEFAULT 0.0,
+                franking_percentage REAL DEFAULT 0.0,
+                tax_benefit REAL DEFAULT 0.0
+            )
+        ''')
+        
+        # Franking static data table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS franking_static_data (
+                stock TEXT PRIMARY KEY,
+                typical_franking_rate REAL,
+                sector TEXT,
+                reliability TEXT,
+                last_updated TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        
+        # Tax settings table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS tax_settings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tax_year TEXT NOT NULL,
+                taxable_income REAL NOT NULL,
+                tax_bracket REAL NOT NULL,
+                medicare_levy REAL DEFAULT 2.0,
+                is_resident BOOLEAN DEFAULT 1,
+                created_date TEXT DEFAULT CURRENT_TIMESTAMP
             )
         ''')
         
@@ -388,7 +432,7 @@ class ASXPortfolioTracker:
         return cash_balance
     
     def get_portfolio_summary(self, api_key: str = "demo", use_api: bool = False, force: bool = False) -> Dict:
-        """Get complete portfolio summary"""
+        """Get complete portfolio summary with franking analysis"""
         positions = self.update_current_prices(api_key, use_api, force)
         
         total_cost = sum(pos.avg_cost * pos.quantity for pos in positions.values())
@@ -408,7 +452,8 @@ class ASXPortfolioTracker:
         # Calculate total portfolio value (stocks + cash)
         total_portfolio_value = total_market_value + cash_balance
         
-        return {
+        # Basic portfolio summary
+        summary = {
             'positions': positions,
             'total_cost': total_cost,
             'total_market_value': total_market_value,
@@ -420,9 +465,112 @@ class ASXPortfolioTracker:
             'api_calls_used': self.api_calls_today,
             'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
+        
+        # Add franking analysis if available
+        if FRANKING_AVAILABLE and self.franking_calculator:
+            try:
+                franking_analysis = self.get_franking_summary()
+                summary.update({
+                    'franking_credits': franking_analysis.get('total_franking_credits', 0),
+                    'tax_benefit': franking_analysis.get('tax_benefit', 0),
+                    'franking_efficiency': franking_analysis.get('franking_efficiency', 0),
+                    'effective_tax_rate': franking_analysis.get('effective_tax_rate', 0)
+                })
+            except Exception as e:
+                print(f"Warning: Franking analysis failed: {e}")
+        
+        return summary
     
-    def export_portfolio_csv(self, filename: str = None):
-        """Export current portfolio to CSV"""
+    def get_franking_summary(self, taxable_income: float = 85000, estimated_yield: float = 0.04) -> Dict:
+        """Get franking credit analysis for current portfolio"""
+        if not FRANKING_AVAILABLE or not self.franking_calculator:
+            return {
+                'error': 'Franking calculator not available',
+                'total_franking_credits': 0,
+                'tax_benefit': 0,
+                'franking_efficiency': 0
+            }
+        
+        # Get positions with updated prices
+        positions = self.update_current_prices(use_api=False)
+        return self.franking_calculator.calculate_franking_benefit(
+            positions, taxable_income, estimated_yield
+        )
+    
+    def get_franking_optimization_suggestions(self, taxable_income: float = 85000) -> List[Dict]:
+        """Get suggestions for optimizing franking credits"""
+        if not FRANKING_AVAILABLE or not self.franking_calculator:
+            return []
+        
+        positions = self.get_positions()
+        return self.franking_calculator.get_optimization_suggestions(positions, taxable_income)
+    
+    def get_stock_franking_info(self, stock: str) -> Dict:
+        """Get franking information for a specific stock"""
+        if not FRANKING_AVAILABLE or not self.franking_db:
+            return {
+                'franking_rate': 0,
+                'sector': 'Unknown',
+                'reliability': 'unavailable'
+            }
+        
+        return self.franking_db.get_franking_info(stock)
+    
+    def save_tax_settings(self, settings: Dict):
+        """Save tax settings to database"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            INSERT INTO tax_settings 
+            (tax_year, taxable_income, tax_bracket, medicare_levy, is_resident)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (
+            settings.get('tax_year', '2024-25'),
+            settings.get('taxable_income', 85000),
+            settings.get('tax_bracket', 32.5),
+            settings.get('medicare_levy', 2.0),
+            settings.get('is_resident', True)
+        ))
+        
+        conn.commit()
+        conn.close()
+    
+    def get_tax_settings(self) -> Dict:
+        """Get latest tax settings from database"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT tax_year, taxable_income, tax_bracket, medicare_levy, is_resident
+            FROM tax_settings 
+            ORDER BY created_date DESC 
+            LIMIT 1
+        ''')
+        
+        result = cursor.fetchone()
+        conn.close()
+        
+        if result:
+            return {
+                'tax_year': result[0],
+                'taxable_income': result[1],
+                'tax_bracket': result[2],
+                'medicare_levy': result[3],
+                'is_resident': bool(result[4])
+            }
+        else:
+            # Default settings
+            return {
+                'tax_year': '2024-25',
+                'taxable_income': 85000,
+                'tax_bracket': 32.5,
+                'medicare_levy': 2.0,
+                'is_resident': True
+            }
+    
+    def export_portfolio_csv(self, filename: str = None, include_franking: bool = True):
+        """Export current portfolio to CSV with optional franking data"""
         if filename is None:
             filename = f"portfolio_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
         
@@ -430,23 +578,41 @@ class ASXPortfolioTracker:
         
         with open(filename, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
-            writer.writerow(['Stock', 'Quantity', 'Avg Cost', 'Current Price', 
-                           'Market Value', 'Unrealized P&L', 'P&L %'])
+            
+            # Headers
+            headers = ['Stock', 'Quantity', 'Avg Cost', 'Current Price', 
+                      'Market Value', 'Unrealized P&L', 'P&L %']
+            
+            if include_franking and FRANKING_AVAILABLE:
+                headers.extend(['Franking Rate', 'Sector', 'Effective Yield'])
+            
+            writer.writerow(headers)
             
             for pos in summary['positions'].values():
                 pnl_pct = ((pos.current_price / pos.avg_cost - 1) * 100) if pos.avg_cost > 0 else 0
-                writer.writerow([
+                row = [
                     pos.stock, pos.quantity, f"${pos.avg_cost:.4f}", 
                     f"${pos.current_price:.4f}", f"${pos.market_value:.2f}",
                     f"${pos.unrealized_pnl:.2f}", f"{pnl_pct:.2f}%"
-                ])
+                ]
+                
+                if include_franking and FRANKING_AVAILABLE:
+                    franking_info = self.get_stock_franking_info(pos.stock)
+                    effective_yield = pos.market_value * 0.04 * (1 + franking_info['franking_rate'] / 100 * 0.3) / pos.market_value * 100 if pos.market_value > 0 else 0
+                    row.extend([
+                        f"{franking_info['franking_rate']:.0f}%",
+                        franking_info['sector'],
+                        f"{effective_yield:.2f}%"
+                    ])
+                
+                writer.writerow(row)
         
         print(f"Portfolio exported to {filename}")
         return filename
 
 
 def main():
-    """Example usage"""
+    """Example usage with franking analysis"""
     tracker = ASXPortfolioTracker()
     
     # Sample transaction data from user
@@ -468,7 +634,7 @@ def main():
     # Import transactions
     tracker.import_transactions_from_csv(csv_data)
     
-    # Get portfolio summary
+    # Get portfolio summary with franking analysis
     print("=== ASX Portfolio Summary ===")
     summary = tracker.get_portfolio_summary(use_api=False)  # Use sample prices by default
     
@@ -477,14 +643,34 @@ def main():
     print(f"Unrealized P&L: ${summary['total_unrealized_pnl']:.2f}")
     print(f"Return: {summary['return_percentage']:.2f}%")
     print(f"Total Fees Paid: ${summary['total_fees']:.2f}")
+    print(f"Cash Balance: ${summary['cash_balance']:.2f}")
     print(f"API Calls Used Today: {summary['api_calls_used']}/20")
     print(f"Last Updated: {summary['last_updated']}")
+    
+    # Franking analysis
+    if FRANKING_AVAILABLE:
+        print(f"\n=== Franking Credit Analysis ===")
+        print(f"Annual Franking Credits: ${summary.get('franking_credits', 0):.2f}")
+        print(f"Tax Benefit: ${summary.get('tax_benefit', 0):.2f}")
+        print(f"Franking Efficiency: {summary.get('franking_efficiency', 0):.1f}%")
+        print(f"Effective Tax Rate: {summary.get('effective_tax_rate', 0):.1f}%")
+        
+        # Get detailed franking analysis
+        franking_details = tracker.get_franking_summary()
+        if 'stock_details' in franking_details:
+            print(f"\n=== Stock-by-Stock Franking Analysis ===")
+            for stock in franking_details['stock_details']:
+                print(f"{stock['stock']}: {stock['franking_rate']:.0f}% franked, "
+                      f"${stock['franking_credit']:.2f} annual credits, "
+                      f"{stock['effective_yield']:.2f}% effective yield")
     
     print("\n=== Individual Positions ===")
     for pos in summary['positions'].values():
         pnl_pct = ((pos.current_price / pos.avg_cost - 1) * 100) if pos.avg_cost > 0 else 0
+        franking_info = tracker.get_stock_franking_info(pos.stock)
         print(f"{pos.stock}: {pos.quantity} shares @ ${pos.avg_cost:.4f} "
-              f"| Current: ${pos.current_price:.4f} | P&L: ${pos.unrealized_pnl:.2f} ({pnl_pct:.2f}%)")
+              f"| Current: ${pos.current_price:.4f} | P&L: ${pos.unrealized_pnl:.2f} ({pnl_pct:.2f}%) "
+              f"| Franking: {franking_info['franking_rate']:.0f}%")
 
 
 if __name__ == "__main__":

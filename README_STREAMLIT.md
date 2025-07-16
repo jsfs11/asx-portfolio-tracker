@@ -28,6 +28,8 @@ streamlit run streamlit_app.py
 
 ### 🏠 **Dashboard**
 - Portfolio overview with key metrics
+- Cash balance tracking with starting capital
+- Franking credits overview section
 - Interactive pie chart showing allocation
 - Performance bar chart by stock
 - Real-time positions table
@@ -50,6 +52,19 @@ streamlit run streamlit_app.py
 - **Attribution Analysis**: Which stocks help/hurt performance
 - **Rolling Performance**: 1D, 7D, 30D trend analysis
 - **Export Functions**: CSV downloads for all data
+
+### 🏛️ **Franking Credits**
+- **Comprehensive Tax Analysis**: Annual franking credits calculations
+- **Stock-by-Stock Breakdown**: Detailed franking information table
+- **Interactive Visualizations**: Bar charts and sector pie charts
+- **Sector Analysis**: Franking distribution across portfolio sectors
+- **Export Functionality**: CSV downloads with franking data
+
+### 🧮 **Tax Calculator**
+- **Interactive Tax Settings**: Configure income and tax parameters
+- **Tax Optimization**: Real-time tax calculation with franking benefits
+- **Australian Tax Brackets**: 2024-25 tax year calculations
+- **Savings Estimator**: Calculate tax benefits from franking credits
 
 ### ⚙️ **Settings**
 - API configuration overview
@@ -157,9 +172,14 @@ Users just need to:
 | Feature | CLI Tools | Streamlit Web |
 |---------|-----------|---------------|
 | Portfolio tracking | ✅ | ✅ |
+| Cash balance tracking | ✅ | ✅ |
+| Franking credits analysis | ✅ | ✅ |
+| Tax calculator | ❌ | ✅ |
 | Price updates | ✅ | ✅ |
 | Performance analysis | ✅ | ✅ |
 | Data export | ✅ | ✅ |
+| Interactive charts | ❌ | ✅ |
+| Sector visualizations | ❌ | ✅ |
 | User interface | Terminal | Modern Web |
 | Ease of use | Technical | User-friendly |
 | Sharing | Screenshots | Live demo |

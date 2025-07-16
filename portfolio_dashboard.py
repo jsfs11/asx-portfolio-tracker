@@ -72,6 +72,43 @@ def print_dividend_summary(dividend_tracker: DividendTracker, positions: dict):
             print(f"Portfolio Dividend Yield: {portfolio_yield:.2f}%")
 
 
+def print_franking_summary(tracker: ASXPortfolioTracker, positions: dict):
+    """Print franking credits analysis"""
+    print("\nFRANKING CREDITS ANALYSIS:")
+    print("-" * 60)
+    
+    # Check if franking is available
+    try:
+        from franking_calculator import FrankingTaxCalculator, StaticFrankingDatabase
+        franking_available = True
+    except ImportError:
+        print("Franking calculator not available. Install required dependencies.")
+        return
+    
+    # Get franking summary
+    franking_summary = tracker.get_franking_summary()
+    
+    if franking_summary:
+        print(f"Annual Franking Credits:  ${franking_summary.get('total_franking_credits', 0):>12,.2f}")
+        print(f"Tax Benefit:             ${franking_summary.get('tax_benefit', 0):>12,.2f}")
+        print(f"Franking Efficiency:     {franking_summary.get('franking_efficiency', 0):>11.1f}%")
+        print(f"Effective Tax Rate:      {franking_summary.get('effective_tax_rate', 0):>11.1f}%")
+        
+        # Show stock-by-stock franking analysis
+        if 'stock_details' in franking_summary:
+            print(f"\nSTOCK-BY-STOCK FRANKING ANALYSIS:")
+            print(f"{'Stock':<6} {'Franking':<8} {'Credits':<10} {'Effective':<10} {'Sector':<12}")
+            print("-" * 60)
+            
+            for stock in franking_summary['stock_details']:
+                print(f"{stock['stock']:<6} {stock['franking_rate']:>6.0f}%  "
+                      f"${stock['franking_credit']:>8.2f}  "
+                      f"{stock['effective_yield']:>8.2f}%  "
+                      f"{stock.get('sector', 'Unknown'):<12}")
+    else:
+        print("No franking analysis available.")
+
+
 def add_transaction(tracker: ASXPortfolioTracker):
     """Interactive transaction addition"""
     print("\nAdd New Transaction:")
@@ -147,6 +184,8 @@ def main():
     parser.add_argument('--export', action='store_true', help='Export portfolio data')
     parser.add_argument('--details', action='store_true', help='Show detailed positions')
     parser.add_argument('--dividends', action='store_true', help='Show dividend information')
+    parser.add_argument('--franking', action='store_true', help='Show franking credits analysis')
+    parser.add_argument('--update-franking', action='store_true', help='Update franking data from API')
     parser.add_argument('--api-key', default=EODHD_API_KEY, help='EODHD API key')
     
     args = parser.parse_args()
@@ -220,13 +259,40 @@ def main():
     if args.dividends:
         print_dividend_summary(dividend_tracker, summary['positions'])
     
+    if args.franking:
+        print_franking_summary(tracker, summary['positions'])
+    
+    if args.update_franking:
+        print("\nUpdating franking data from API...")
+        try:
+            from franking_calculator import StaticFrankingDatabase
+            franking_db = StaticFrankingDatabase()
+            
+            # Get stocks from current portfolio
+            stocks = list(summary['positions'].keys())
+            if stocks:
+                results = franking_db.bulk_update_franking_from_api(stocks, args.api_key)
+                if results:
+                    print(f"✅ Updated franking data for {len(results)} stocks")
+                else:
+                    print("❌ No franking updates available")
+            else:
+                print("❌ No stocks in portfolio to update")
+                
+        except ImportError:
+            print("❌ Franking calculator not available")
+        except Exception as e:
+            print(f"❌ Error updating franking data: {e}")
+    
     # Interactive menu if no specific action requested
-    if not any([args.update, args.add, args.export, args.details, args.dividends]):
+    if not any([args.update, args.add, args.export, args.details, args.dividends, args.franking, args.update_franking]):
         print("\nOptions:")
         print("  --update       Update current prices from API")
         print("  --update-major Update only major stocks (saves API calls)")
         print("  --details      Show detailed positions") 
         print("  --dividends    Show dividend analysis")
+        print("  --franking     Show franking credits analysis")
+        print("  --update-franking Update franking data from API")
         print("  --add          Add new transaction")
         print("  --export       Export portfolio data")
         print("  --help         Show all options")

@@ -6,6 +6,9 @@ plotly>=5.0.0
 yfinance>=0.2.0
 kaleido>=0.2.0
 
+# Additional dependencies for franking credit features
+sqlite3
+
 # Environment variables for API key security
 python-dotenv>=1.0.0
 

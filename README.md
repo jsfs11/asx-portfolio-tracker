@@ -5,14 +5,18 @@ A comprehensive Python-based portfolio tracking system for Australian Stock Exch
 ## Features
 
 - 📊 **Portfolio Tracking**: Track multiple ASX stock positions with cost basis and P&L
+- 💰 **Cash Balance Tracking**: Real-time cash position monitoring with starting capital
+- 🏛️ **Franking Credits Analysis**: Comprehensive Australian tax credit calculations
 - 💰 **Fee Calculation**: Automatic brokerage fee calculation
 - 📈 **Real-time Prices**: EODHD API integration with demo mode fallback
 - 💵 **Dividend Tracking**: Monitor dividend yields and estimated income
+- 🧮 **Tax Calculator**: Interactive tax optimization with franking benefits
 - 📱 **Dual Interface**: Command line tools and modern web interface
 - 💾 **Data Persistence**: SQLite database for transaction and price history
 - 📤 **Export Functionality**: CSV export for portfolio and transaction data
 - 📊 **Performance Analysis**: Advanced analytics and risk metrics
 - 📈 **Interactive Charts**: Plotly-based visualizations with export capabilities
+- 🎯 **Sector Analysis**: Proper GICS sector classifications for all stocks
 - 🔒 **Secure Configuration**: Environment-based API key management
 
 ## Quick Start
@@ -49,6 +53,12 @@ python3 portfolio_dashboard.py --details
 
 # Include dividend analysis
 python3 portfolio_dashboard.py --dividends
+
+# Show franking credits analysis
+python3 portfolio_dashboard.py --franking
+
+# Update franking data from API
+python3 portfolio_dashboard.py --update-franking
 
 # Update current prices from EODHD API (only when explicitly requested)
 python3 portfolio_dashboard.py --update
@@ -104,6 +114,7 @@ The system includes sample data to demonstrate functionality. You can clear this
 asx-portfolio-tracker/
 ├── portfolio_tracker.py       # Core portfolio tracking logic
 ├── dividend_tracker.py        # Dividend analysis and tracking
+├── franking_calculator.py     # Franking credits and tax analysis
 ├── portfolio_dashboard.py     # Command-line interface
 ├── portfolio_vs_asx200.py     # Portfolio vs ASX200 comparison
 ├── performance_attribution.py # Stock contribution analysis
@@ -129,7 +140,14 @@ asx-portfolio-tracker/
 - Tracks dividend history
 - Calculates dividend yields
 - Estimates annual dividend income
-- Supports franking credits (future enhancement)
+- Integrates with franking credits analysis
+
+### FrankingCalculator
+- Comprehensive Australian tax credit calculations
+- 50+ major ASX stocks franking rates database
+- Tax optimization suggestions
+- Effective yield calculations including franking benefits
+- API integration framework for real-time updates
 
 ### Portfolio Dashboard
 - Command-line interface
@@ -175,6 +193,8 @@ API Calls Used Today: 5/20
 PORTFOLIO OVERVIEW:
   Total Cost Basis:     $   XX,XXX.XX
   Current Market Value: $   XX,XXX.XX
+  Cash Balance:         $    X,XXX.XX
+  Total Portfolio:      $   XX,XXX.XX
   Total Fees Paid:      $      XXX.XX
   Unrealized P&L:       $      XXX.XX
   Total Return:                X.XX% 📈
@@ -193,6 +213,13 @@ XXXX   Yield:  X.XX%  Est. Annual: $   XX.XX
 
 Total Estimated Annual Dividends: $XXX.XX
 Portfolio Dividend Yield: X.XX%
+
+FRANKING CREDITS ANALYSIS:
+------------------------------------------------------------
+Annual Franking Credits:  $      XXX.XX
+Tax Benefit:             $      XXX.XX
+Franking Efficiency:            XX.X%
+Effective Tax Rate:             XX.X%
 ```
 
 ## Adding Transactions
