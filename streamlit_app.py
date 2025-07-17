@@ -77,7 +77,7 @@ st.markdown("""
 st.sidebar.title("Navigation")
 page = st.sidebar.selectbox(
     "Choose a page",
-    ["🏠 Dashboard", "💰 Add Transaction", "📈 Update Prices", "📊 Performance Analysis", "🏛️ Franking Credits", "🧮 Tax Calculator", "⚙️ Settings"]
+    ["🏠 Dashboard", "💰 Add Transaction", "📈 Update Prices", "📊 Performance Analysis", "🏛️ Franking Credits", "💰 CGT Analysis", "🧮 Tax Calculator", "⚙️ Settings"]
 )
 
 # Main header
@@ -545,6 +545,184 @@ elif page == "🏛️ Franking Credits":
                             st.info(f"💡 {message}")
                     else:
                         st.success("Your portfolio is already well-optimized for franking credits!")
+
+# CGT Analysis Page
+elif page == "💰 CGT Analysis":
+    st.header("Capital Gains Tax Analysis")
+    
+    # CGT Analysis
+    try:
+        from cgt_calculator import CGTCalculator
+        
+        # Initialize CGT calculator
+        tracker = ASXPortfolioTracker()
+        cgt_calc = CGTCalculator(tracker.db_path)
+        
+        # Initialize CGT tracking if needed
+        col1, col2 = st.columns([3, 1])
+        with col2:
+            if st.button("🔄 Initialize CGT Tracking", help="Set up CGT tracking from your transaction history"):
+                with st.spinner("Setting up CGT tracking..."):
+                    cgt_calc.create_tax_parcels_from_transactions()
+                    st.success("✅ CGT tracking initialized!")
+        
+        # Tax year selector
+        current_year = datetime.now().year
+        if datetime.now().month >= 7:
+            default_tax_year = f"{current_year}-{current_year + 1}"
+        else:
+            default_tax_year = f"{current_year - 1}-{current_year}"
+        
+        with col1:
+            tax_year = st.selectbox(
+                "📅 Select Tax Year",
+                [f"{y}-{y+1}" for y in range(2020, current_year + 2)],
+                index=[f"{y}-{y+1}" for y in range(2020, current_year + 2)].index(default_tax_year)
+            )
+        
+        # Get current prices and summary
+        summary = get_portfolio_summary()
+        current_prices = {}
+        for stock, pos in summary['positions'].items():
+            current_prices[stock] = pos.current_price
+        
+        # Unrealised gains analysis
+        st.subheader("📈 Unrealised Capital Gains")
+        
+        unrealised = cgt_calc.get_unrealised_gains(current_prices)
+        
+        if unrealised:
+            # Create DataFrame for display
+            unrealised_df = pd.DataFrame(unrealised)
+            
+            # Format for display
+            display_df = unrealised_df[['stock', 'quantity', 'cost_base', 'current_value', 
+                                      'unrealised_gain', 'after_discount', 'holding_period_days', 
+                                      'discount_eligible']].copy()
+            
+            display_df.columns = ['Stock', 'Quantity', 'Cost Base', 'Current Value', 
+                                'Gain/Loss', 'After Discount', 'Days Held', 'Discount Eligible']
+            
+            # Format currency columns
+            for col in ['Cost Base', 'Current Value', 'Gain/Loss', 'After Discount']:
+                display_df[col] = display_df[col].apply(lambda x: f"${x:,.2f}")
+            
+            # Add emoji for discount eligibility
+            display_df['Discount Eligible'] = display_df['Discount Eligible'].apply(lambda x: "✅" if x else "❌")
+            
+            st.dataframe(display_df, use_container_width=True)
+            
+            # Summary metrics
+            col1, col2, col3, col4 = st.columns(4)
+            
+            total_unrealised = sum(h['unrealised_gain'] for h in unrealised)
+            total_after_discount = sum(h['after_discount'] for h in unrealised)
+            discount_savings = total_unrealised - total_after_discount
+            
+            with col1:
+                st.metric("Total Unrealised Gain", f"${total_unrealised:,.2f}")
+            
+            with col2:
+                st.metric("After CGT Discount", f"${total_after_discount:,.2f}")
+            
+            with col3:
+                st.metric("Potential CGT Liability", f"${max(0, total_after_discount):,.2f}")
+            
+            with col4:
+                st.metric("CGT Discount Savings", f"${discount_savings:,.2f}")
+            
+            # Visual chart
+            st.subheader("📊 CGT Analysis by Stock")
+            
+            # Create chart showing gains vs after-discount
+            fig = go.Figure()
+            
+            stocks = [h['stock'] for h in unrealised]
+            gains = [h['unrealised_gain'] for h in unrealised]
+            after_discount = [h['after_discount'] for h in unrealised]
+            
+            fig.add_trace(go.Bar(
+                name='Gross Gain/Loss',
+                x=stocks,
+                y=gains,
+                marker_color='lightblue'
+            ))
+            
+            fig.add_trace(go.Bar(
+                name='After CGT Discount',
+                x=stocks,
+                y=after_discount,
+                marker_color='darkblue'
+            ))
+            
+            fig.update_layout(
+                title="Unrealised Gains: Gross vs After CGT Discount",
+                xaxis_title="Stock",
+                yaxis_title="Gain/Loss ($)",
+                barmode='group',
+                height=400
+            )
+            
+            st.plotly_chart(fig, use_container_width=True)
+            
+        else:
+            st.info("💡 No unrealised gains data available. Click 'Initialize CGT Tracking' to get started.")
+        
+        # Realised gains for tax year
+        st.subheader(f"💰 Realised Gains/Losses ({tax_year})")
+        
+        try:
+            cgt_summary = cgt_calc.calculate_annual_cgt(tax_year)
+            
+            if cgt_summary.total_capital_gains > 0 or cgt_summary.total_capital_losses > 0:
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    st.metric("Total Capital Gains", f"${cgt_summary.total_capital_gains:,.2f}")
+                    st.metric("Total Capital Losses", f"${cgt_summary.total_capital_losses:,.2f}")
+                
+                with col2:
+                    st.metric("Discount Eligible Gains", f"${cgt_summary.discount_eligible_gains:,.2f}")
+                    st.metric("After CGT Discount", f"${cgt_summary.discounted_gains:,.2f}")
+                
+                with col3:
+                    st.metric("Carried Forward Losses", f"${cgt_summary.carried_forward_losses:,.2f}")
+                    st.metric("NET CAPITAL GAIN", f"${cgt_summary.net_capital_gain:,.2f}")
+                    
+            else:
+                st.info(f"📋 No realised capital gains/losses for {tax_year}")
+                
+        except Exception as e:
+            st.info(f"📋 No realised gains data for {tax_year}")
+        
+        # CGT optimization suggestions
+        st.subheader("🎯 Tax Optimization Suggestions")
+        
+        # Find stocks with unrealised losses for tax loss harvesting
+        if unrealised:
+            losses = [h for h in unrealised if h['unrealised_gain'] < 0]
+            gains = [h for h in unrealised if h['unrealised_gain'] > 0]
+            
+            if losses:
+                st.write("**💸 Tax Loss Harvesting Opportunities:**")
+                for loss in losses:
+                    st.write(f"• **{loss['stock']}**: Loss of ${abs(loss['unrealised_gain']):,.2f} (held {loss['holding_period_days']} days)")
+            
+            if gains:
+                st.write("**⏰ CGT Discount Opportunities:**")
+                for gain in gains:
+                    if gain['holding_period_days'] < 365:
+                        days_to_discount = 365 - gain['holding_period_days']
+                        potential_savings = gain['unrealised_gain'] * 0.5
+                        st.write(f"• **{gain['stock']}**: Wait {days_to_discount} more days to save ${potential_savings:,.2f} in CGT")
+            
+            if not losses and not gains:
+                st.info("🎉 No immediate tax optimization opportunities identified.")
+        
+    except ImportError:
+        st.error("❌ CGT calculator not available. Please ensure cgt_calculator.py is in the directory.")
+    except Exception as e:
+        st.error(f"❌ CGT analysis error: {e}")
 
 # Tax Calculator Page
 elif page == "🧮 Tax Calculator":

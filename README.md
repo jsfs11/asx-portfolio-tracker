@@ -7,6 +7,7 @@ A comprehensive Python-based portfolio tracking system for Australian Stock Exch
 - 📊 **Portfolio Tracking**: Track multiple ASX stock positions with cost basis and P&L
 - 💰 **Cash Balance Tracking**: Real-time cash position monitoring with starting capital
 - 🏛️ **Franking Credits Analysis**: Comprehensive Australian tax credit calculations
+- 💰 **CGT Analysis**: Capital Gains Tax tracking with 12-month discount calculations
 - 💰 **Fee Calculation**: Automatic brokerage fee calculation
 - 📈 **Real-time Prices**: EODHD API integration with demo mode fallback
 - 💵 **Dividend Tracking**: Monitor dividend yields and estimated income
@@ -59,6 +60,15 @@ python3 portfolio_dashboard.py --franking
 
 # Update franking data from API
 python3 portfolio_dashboard.py --update-franking
+
+# Show CGT analysis (unrealized gains)
+python3 portfolio_dashboard.py --cgt
+
+# Generate detailed CGT report for tax year
+python3 portfolio_dashboard.py --cgt-report 2024-2025
+
+# Initialize CGT tracking from transactions
+python3 portfolio_dashboard.py --update-cgt
 
 # Update current prices from EODHD API (only when explicitly requested)
 python3 portfolio_dashboard.py --update
@@ -115,6 +125,7 @@ asx-portfolio-tracker/
 ├── portfolio_tracker.py       # Core portfolio tracking logic
 ├── dividend_tracker.py        # Dividend analysis and tracking
 ├── franking_calculator.py     # Franking credits and tax analysis
+├── cgt_calculator.py          # Capital Gains Tax calculations
 ├── portfolio_dashboard.py     # Command-line interface
 ├── portfolio_vs_asx200.py     # Portfolio vs ASX200 comparison
 ├── performance_attribution.py # Stock contribution analysis
@@ -148,6 +159,14 @@ asx-portfolio-tracker/
 - Tax optimization suggestions
 - Effective yield calculations including franking benefits
 - API integration framework for real-time updates
+
+### CGTCalculator
+- Australian Capital Gains Tax compliance and calculations
+- Tax parcel tracking with FIFO/LIFO matching methods
+- 12-month CGT discount eligibility tracking
+- Historical transaction processing and CGT event creation
+- Unrealized gains analysis with discount projections
+- Loss carry-forward calculations and tax optimization suggestions
 
 ### Portfolio Dashboard
 - Command-line interface
@@ -220,6 +239,13 @@ Annual Franking Credits:  $      XXX.XX
 Tax Benefit:             $      XXX.XX
 Franking Efficiency:            XX.X%
 Effective Tax Rate:             XX.X%
+
+CGT ANALYSIS:
+------------------------------------------------------------
+Total Unrealized Gain:   $      XXX.XX
+After CGT Discount:      $      XXX.XX
+Potential CGT Liability: $      XXX.XX
+CGT Discount Savings:    $      XXX.XX
 ```
 
 ## Adding Transactions

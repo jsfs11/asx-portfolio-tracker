@@ -10,6 +10,15 @@ from portfolio_tracker import ASXPortfolioTracker
 from dividend_tracker import DividendTracker, populate_sample_dividends
 from config import EODHD_API_KEY
 
+# CGT imports - handle gracefully if not available
+try:
+    from cgt_calculator import CGTCalculator, generate_cgt_report
+    CGT_AVAILABLE = True
+except ImportError:
+    CGT_AVAILABLE = False
+    CGTCalculator = None
+    generate_cgt_report = None
+
 
 def print_portfolio_summary(tracker: ASXPortfolioTracker, show_details: bool = False, use_api: bool = False, force_update: bool = False):
     """Print formatted portfolio summary"""
@@ -109,6 +118,90 @@ def print_franking_summary(tracker: ASXPortfolioTracker, positions: dict):
         print("No franking analysis available.")
 
 
+def print_cgt_summary(tracker: ASXPortfolioTracker, positions: dict, tax_year: str = None):
+    """Print CGT analysis"""
+    print("\nCAPITAL GAINS TAX ANALYSIS:")
+    print("-" * 60)
+    
+    if not CGT_AVAILABLE:
+        print("CGT calculator not available. Please ensure cgt-calculator.py is in the directory.")
+        return
+    
+    try:
+        cgt_calc = CGTCalculator(tracker.db_path)
+        
+        # Initialize tax parcels if needed
+        cgt_calc.create_tax_parcels_from_transactions()
+        
+        # Use current tax year if not specified
+        if not tax_year:
+            from datetime import datetime
+            now = datetime.now()
+            if now.month >= 7:
+                tax_year = f"{now.year}-{now.year + 1}"
+            else:
+                tax_year = f"{now.year - 1}-{now.year}"
+        
+        # Get current prices for unrealised gains
+        current_prices = {}
+        for stock, pos in positions.items():
+            current_prices[stock] = pos.current_price
+        
+        # Show unrealised gains
+        unrealised = cgt_calc.get_unrealised_gains(current_prices)
+        
+        if unrealised:
+            print(f"UNREALISED CAPITAL GAINS (as at {datetime.now().strftime('%Y-%m-%d')}):")
+            print(f"{'Stock':<6} {'Qty':<6} {'Cost Base':<12} {'Current Val':<12} {'Gain/Loss':<12} {'After Disc.':<12} {'Held':<8}")
+            print("-" * 80)
+            
+            total_unrealised = 0
+            total_after_discount = 0
+            
+            for holding in unrealised:
+                total_unrealised += holding['unrealised_gain']
+                total_after_discount += holding['after_discount']
+                
+                discount_indicator = "✓" if holding['discount_eligible'] else ""
+                
+                print(f"{holding['stock']:<6} {holding['quantity']:<6} "
+                      f"${holding['cost_base']:<11.2f} ${holding['current_value']:<11.2f} "
+                      f"${holding['unrealised_gain']:<11.2f} ${holding['after_discount']:<11.2f} "
+                      f"{holding['holding_period_days']:>5}d {discount_indicator}")
+            
+            print("-" * 80)
+            print(f"{'TOTAL':<19} ${sum(h['cost_base'] for h in unrealised):<11.2f} "
+                  f"${sum(h['current_value'] for h in unrealised):<11.2f} "
+                  f"${total_unrealised:<11.2f} ${total_after_discount:<11.2f}")
+            
+            print(f"\nPOTENTIAL CGT LIABILITY: ${max(0, total_after_discount):,.2f}")
+            
+            # Show savings from CGT discount
+            discount_savings = total_unrealised - total_after_discount
+            if discount_savings > 0:
+                print(f"CGT Discount Savings:    ${discount_savings:,.2f}")
+        
+        # Show realised gains for current tax year
+        try:
+            summary = cgt_calc.calculate_annual_cgt(tax_year)
+            
+            if summary.total_capital_gains > 0 or summary.total_capital_losses > 0:
+                print(f"\nREALISED GAINS/LOSSES ({tax_year}):")
+                print(f"Total Capital Gains:     ${summary.total_capital_gains:,.2f}")
+                print(f"Total Capital Losses:    ${summary.total_capital_losses:,.2f}")
+                print(f"Discount Eligible Gains: ${summary.discount_eligible_gains:,.2f}")
+                print(f"After CGT Discount:      ${summary.discounted_gains:,.2f}")
+                print(f"Carried Forward Losses:  ${summary.carried_forward_losses:,.2f}")
+                print(f"\nNET CAPITAL GAIN:       ${summary.net_capital_gain:,.2f}")
+        except:
+            # No realised events yet
+            pass
+            
+    except Exception as e:
+        print(f"CGT analysis error: {e}")
+        print("Run with --update-cgt to initialize CGT tracking")
+
+
 def add_transaction(tracker: ASXPortfolioTracker):
     """Interactive transaction addition"""
     print("\nAdd New Transaction:")
@@ -186,6 +279,9 @@ def main():
     parser.add_argument('--dividends', action='store_true', help='Show dividend information')
     parser.add_argument('--franking', action='store_true', help='Show franking credits analysis')
     parser.add_argument('--update-franking', action='store_true', help='Update franking data from API')
+    parser.add_argument('--cgt', action='store_true', help='Show CGT analysis')
+    parser.add_argument('--cgt-report', type=str, help='Generate detailed CGT report for tax year (e.g. 2024-2025)')
+    parser.add_argument('--update-cgt', action='store_true', help='Initialize/update CGT tracking from transactions')
     parser.add_argument('--api-key', default=EODHD_API_KEY, help='EODHD API key')
     
     args = parser.parse_args()
@@ -262,6 +358,32 @@ def main():
     if args.franking:
         print_franking_summary(tracker, summary['positions'])
     
+    if args.cgt:
+        print_cgt_summary(tracker, summary['positions'])
+    
+    if args.cgt_report:
+        if not CGT_AVAILABLE:
+            print("\n❌ CGT calculator not available. Please ensure cgt-calculator.py is in the directory.")
+        else:
+            try:
+                cgt_calc = CGTCalculator(tracker.db_path)
+                cgt_calc.create_tax_parcels_from_transactions()
+                generate_cgt_report(cgt_calc, args.cgt_report)
+            except Exception as e:
+                print(f"Error generating CGT report: {e}")
+    
+    if args.update_cgt:
+        if not CGT_AVAILABLE:
+            print("\n❌ CGT calculator not available. Please ensure cgt-calculator.py is in the directory.")
+        else:
+            print("\nInitializing CGT tracking...")
+            try:
+                cgt_calc = CGTCalculator(tracker.db_path)
+                cgt_calc.create_tax_parcels_from_transactions()
+                print("✅ CGT tracking initialized from transaction history")
+            except Exception as e:
+                print(f"❌ Error initializing CGT tracking: {e}")
+    
     if args.update_franking:
         print("\nUpdating franking data from API...")
         try:
@@ -285,7 +407,7 @@ def main():
             print(f"❌ Error updating franking data: {e}")
     
     # Interactive menu if no specific action requested
-    if not any([args.update, args.add, args.export, args.details, args.dividends, args.franking, args.update_franking]):
+    if not any([args.update, args.add, args.export, args.details, args.dividends, args.franking, args.update_franking, args.cgt, args.cgt_report, args.update_cgt]):
         print("\nOptions:")
         print("  --update       Update current prices from API")
         print("  --update-major Update only major stocks (saves API calls)")
@@ -293,6 +415,9 @@ def main():
         print("  --dividends    Show dividend analysis")
         print("  --franking     Show franking credits analysis")
         print("  --update-franking Update franking data from API")
+        print("  --cgt          Show CGT analysis (unrealised gains)")
+        print("  --cgt-report YEAR Generate detailed CGT report (e.g. 2024-2025)")
+        print("  --update-cgt   Initialize CGT tracking from transactions")
         print("  --add          Add new transaction")
         print("  --export       Export portfolio data")
         print("  --help         Show all options")

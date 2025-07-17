@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2025-07-17
+
+### Added
+- 💰 **Capital Gains Tax (CGT) Analysis**: Complete Australian CGT compliance system
+- 📊 **Tax Parcel Tracking**: FIFO/LIFO matching with accurate cost base calculations
+- 🎯 **12-Month CGT Discount**: Automatic eligibility tracking and discount calculations
+- 📈 **Unrealized Gains Analysis**: Real-time CGT liability projections
+- 📋 **CGT Reporting**: Detailed annual tax reports for ATO compliance
+- 🔄 **Historical Processing**: Automatic CGT event creation from transaction history
+- 💸 **Tax Optimization**: Loss harvesting and discount timing suggestions
+- 🖥️ **Dedicated CGT Interface**: Full-featured web dashboard for CGT analysis
+- 📱 **CLI CGT Commands**: `--cgt`, `--cgt-report`, `--update-cgt` flags
+
+### Enhanced
+- Enhanced transaction processing to include historical sales in CGT calculations
+- Added comprehensive CGT analysis to Streamlit web interface
+- Improved tax optimization with combined franking credits and CGT insights
+- Extended CLI with professional CGT reporting capabilities
+
+### Technical
+- New `cgt_calculator.py` module with complete Australian tax compliance
+- Database schema extensions for tax parcels and CGT events tracking
+- Chronological transaction processing for accurate cost basis calculations
+- Proportional cost base allocation including brokerage fees
+
 ## [2.1.0] - 2025-07-16
 
 ### Added
