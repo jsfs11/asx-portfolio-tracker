@@ -147,7 +147,7 @@ class StaticFrankingDatabase:
                 'reliability': 'estimated'
             }
     
-    def update_franking_from_api(self, stock: str, api_key: str = None) -> Optional[Dict]:
+    def update_franking_from_api(self, stock: str, api_key: Optional[str] = None) -> Optional[Dict]:
         """Update franking information from ASX announcements API"""
         try:
             # Try to get recent dividend announcements for the stock
@@ -172,7 +172,7 @@ class StaticFrankingDatabase:
             
         return None
     
-    def _fetch_recent_announcements(self, stock: str, api_key: str = None) -> List[Dict]:
+    def _fetch_recent_announcements(self, stock: str, api_key: Optional[str] = None) -> List[Dict]:
         """Fetch recent ASX announcements for a stock using web scraping approach"""
         try:
             # Method 1: Try ASX undocumented API
@@ -184,9 +184,9 @@ class StaticFrankingDatabase:
                 'Referer': 'https://www.asx.com.au/'
             }
             
-            params = {
+            params: Dict[str, str] = {
                 'access_token': 'anonymous',
-                'limit': 20
+                'limit': '20'
             }
             
             response = requests.get(url, headers=headers, params=params, timeout=10)
@@ -273,7 +273,7 @@ class StaticFrankingDatabase:
             return sum(stock['franking_rate'] for stock in sector_stocks) / len(sector_stocks)
         return 50.0  # Default
     
-    def bulk_update_franking_from_api(self, stocks: List[str], api_key: str = None) -> Dict[str, Dict]:
+    def bulk_update_franking_from_api(self, stocks: List[str], api_key: Optional[str] = None) -> Dict[str, Dict]:
         """Bulk update franking information for multiple stocks"""
         results = {}
         
@@ -336,7 +336,7 @@ class FrankingTaxCalculator:
             return 0.0
         
         tax = 0.0
-        previous_threshold = 0
+        previous_threshold = 0.0
         
         for threshold, rate in self.tax_brackets:
             if taxable_income <= threshold:
@@ -344,7 +344,7 @@ class FrankingTaxCalculator:
                 break
             else:
                 tax += (threshold - previous_threshold) * rate
-                previous_threshold = threshold
+                previous_threshold = float(threshold)
         
         # Add Medicare levy (simplified - no low income thresholds)
         if taxable_income > 23226:  # Medicare levy threshold 2024-25
@@ -357,8 +357,8 @@ class FrankingTaxCalculator:
                                  estimated_yield: float = 0.04) -> Dict:
         """Calculate franking credit tax benefit for portfolio"""
         
-        total_dividend_income = 0
-        total_franking_credits = 0
+        total_dividend_income = 0.0
+        total_franking_credits = 0.0
         stock_details = []
         
         for stock, position in positions.items():
@@ -405,15 +405,15 @@ class FrankingTaxCalculator:
         # Scenario 2: With franking credits
         assessable_income = taxable_income + total_dividend_income + total_franking_credits
         total_tax_before_franking = self.calculate_tax_on_income(assessable_income)
-        tax_after_franking_offset = max(0, total_tax_before_franking - total_franking_credits)
+        tax_after_franking_offset = max(0.0, total_tax_before_franking - total_franking_credits)
         
         # Calculate benefit
         tax_benefit = tax_without_franking - tax_after_franking_offset
-        franking_refund = max(0, total_franking_credits - total_tax_before_franking)
+        franking_refund = max(0.0, total_franking_credits - total_tax_before_franking)
         
         # Calculate effective tax rate on dividend income
         effective_tax_rate = ((total_dividend_income + total_franking_credits - tax_benefit - franking_refund) / 
-                            (total_dividend_income + total_franking_credits) * 100) if (total_dividend_income + total_franking_credits) > 0 else 0
+                            (total_dividend_income + total_franking_credits) * 100) if (total_dividend_income + total_franking_credits) > 0 else 0.0
         
         return {
             'total_dividend_income': total_dividend_income,
@@ -478,7 +478,7 @@ class FrankingTaxCalculator:
 def get_yahoo_dividend_data(stock: str) -> Dict:
     """Get basic dividend data from Yahoo Finance (optional integration)"""
     try:
-        import yfinance as yf
+        import yfinance as yf  # type: ignore
         ticker = yf.Ticker(f"{stock}.AX")
         info = ticker.info
         

@@ -7,7 +7,7 @@ Tracks dividend payments and yields for portfolio positions
 import sqlite3
 import requests
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union, Any
 from dataclasses import dataclass
 
 
@@ -17,8 +17,8 @@ class Dividend:
     ex_date: str
     amount: float
     currency: str = 'AUD'
-    record_date: str = None
-    payment_date: str = None
+    record_date: Optional[str] = None
+    payment_date: Optional[str] = None
 
 
 class DividendTracker:
@@ -79,7 +79,7 @@ class DividendTracker:
         conn.close()
         print(f"Added dividend: {stock} ${amount:.4f} ex-date {ex_date}")
     
-    def get_stock_dividends(self, stock: str, from_date: str = None) -> List[Dividend]:
+    def get_stock_dividends(self, stock: str, from_date: Optional[str] = None) -> List[Dividend]:
         """Get all dividends for a specific stock"""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -160,7 +160,7 @@ class DividendTracker:
         
         print(f"Recorded dividend payment: {stock} {shares_held} shares × ${dividend_per_share:.4f} = ${total_payment:.2f}")
     
-    def get_total_dividends_received(self, from_date: str = None) -> float:
+    def get_total_dividends_received(self, from_date: Optional[str] = None) -> float:
         """Get total dividends received in portfolio"""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -245,8 +245,8 @@ def populate_sample_dividends(tracker: DividendTracker):
         for div in dividends:
             tracker.add_dividend(
                 stock=stock,
-                ex_date=div['ex_date'],
-                amount=div['amount']
+                ex_date=str(div['ex_date']),
+                amount=float(div['amount']) if isinstance(div['amount'], (int, float, str)) else 0.0
             )
 
 

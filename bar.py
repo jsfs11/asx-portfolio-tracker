@@ -1,5 +1,5 @@
 import pandas as pd
-import plotly.express as px
+import plotly.express as px  # type: ignore
 
 # Data
 data = [

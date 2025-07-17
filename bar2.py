@@ -1,5 +1,5 @@
 import pandas as pd
-import plotly.express as px
+import plotly.express as px  # type: ignore
 
 df = pd.read_csv('portfolio_export_20250714_172832.csv')
 # Convert Market Value to numeric (remove $ and , first)

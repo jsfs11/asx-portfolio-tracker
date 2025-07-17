@@ -6,7 +6,7 @@ Modern web interface for portfolio analysis and tracking
 
 import streamlit as st
 import pandas as pd
-import plotly.graph_objects as go
+import plotly.graph_objects as go  # type: ignore
 from datetime import datetime, date
 import sqlite3
 import sys

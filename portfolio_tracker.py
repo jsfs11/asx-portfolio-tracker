@@ -62,8 +62,8 @@ class ASXPortfolioTracker:
         
         # Initialize franking calculator if available
         if FRANKING_AVAILABLE:
-            self.franking_calculator = FrankingTaxCalculator(self.db_path)
-            self.franking_db = StaticFrankingDatabase()
+            self.franking_calculator: Optional[FrankingTaxCalculator] = FrankingTaxCalculator(self.db_path)
+            self.franking_db: Optional[StaticFrankingDatabase] = StaticFrankingDatabase()
         else:
             self.franking_calculator = None
             self.franking_db = None
@@ -350,7 +350,7 @@ class ASXPortfolioTracker:
                 avg_cost = (data['total_cost'] + data['total_fees']) / data['quantity']
                 result[stock] = Position(
                     stock=stock,
-                    quantity=data['quantity'],
+                    quantity=int(data['quantity']),
                     avg_cost=avg_cost
                 )
         
@@ -361,6 +361,7 @@ class ASXPortfolioTracker:
         positions = self.get_positions()
         
         for stock in positions.keys():
+            price: Optional[float]
             if use_api:
                 # Check if we already have fresh data from today first (unless forced)
                 stored_price = self.get_stored_price_today(stock) if not force else None
@@ -569,7 +570,7 @@ class ASXPortfolioTracker:
                 'is_resident': True
             }
     
-    def export_portfolio_csv(self, filename: str = None, include_franking: bool = True):
+    def export_portfolio_csv(self, filename: Optional[str] = None, include_franking: bool = True):
         """Export current portfolio to CSV with optional franking data"""
         if filename is None:
             filename = f"portfolio_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"

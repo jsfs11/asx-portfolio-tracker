@@ -6,8 +6,8 @@ Helper functions for the Streamlit web interface
 
 import streamlit as st
 import pandas as pd
-import plotly.graph_objects as go
-import plotly.express as px
+import plotly.graph_objects as go  # type: ignore
+import plotly.express as px  # type: ignore
 from datetime import datetime, date
 import sqlite3
 import io

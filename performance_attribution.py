@@ -6,9 +6,9 @@ Analyzes which stocks contributed most to portfolio performance vs ASX200
 
 import sqlite3
 import pandas as pd
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-import plotly.express as px
+import plotly.graph_objects as go  # type: ignore
+from plotly.subplots import make_subplots  # type: ignore
+import plotly.express as px  # type: ignore
 from datetime import datetime
 import numpy as np
 

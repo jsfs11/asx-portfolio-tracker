@@ -6,6 +6,7 @@ Portfolio Dashboard - Command line interface for ASX portfolio tracking
 import argparse
 import sys
 from datetime import datetime
+from typing import Optional
 from portfolio_tracker import ASXPortfolioTracker
 from dividend_tracker import DividendTracker, populate_sample_dividends
 from config import EODHD_API_KEY
@@ -16,8 +17,8 @@ try:
     CGT_AVAILABLE = True
 except ImportError:
     CGT_AVAILABLE = False
-    CGTCalculator = None
-    generate_cgt_report = None
+    CGTCalculator = None  # type: ignore
+    generate_cgt_report = None  # type: ignore
 
 
 def print_portfolio_summary(tracker: ASXPortfolioTracker, show_details: bool = False, use_api: bool = False, force_update: bool = False):
@@ -118,7 +119,7 @@ def print_franking_summary(tracker: ASXPortfolioTracker, positions: dict):
         print("No franking analysis available.")
 
 
-def print_cgt_summary(tracker: ASXPortfolioTracker, positions: dict, tax_year: str = None):
+def print_cgt_summary(tracker: ASXPortfolioTracker, positions: dict, tax_year: Optional[str] = None):
     """Print CGT analysis"""
     print("\nCAPITAL GAINS TAX ANALYSIS:")
     print("-" * 60)
