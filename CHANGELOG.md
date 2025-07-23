@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0] - 2025-07-23
+
+### Added
+- 🚀 **New User Onboarding System**: Complete first-time user setup wizard
+- 🎯 **Smart User Detection**: Automatic detection of new vs existing users
+- 🏠 **Dashboard Integration**: New user welcome flow with guided setup
+- 💰 **Configurable Starting Cash**: No more hardcoded $25,000 assumption
+- 📝 **Portfolio Personalization**: Custom portfolio naming and preferences
+- 🎛️ **Setup Wizard Interface**: Intuitive 2-minute configuration process
+- 🔄 **Re-setup Capability**: Existing users can reconfigure their settings
+
+### Enhanced
+- **Dashboard Experience**: New users see welcome message with setup guidance
+- **Sidebar Navigation**: Visual indicators for incomplete setup
+- **Cash Balance Calculation**: Now uses user-configured starting cash amount
+- **Backward Compatibility**: Existing portfolios work unchanged with graceful defaults
+- **User Settings Management**: Persistent storage of user preferences and setup status
+
+### Technical
+- New `user_settings` database table for onboarding and preferences
+- Enhanced `ASXPortfolioTracker` with user detection methods (`is_new_user()`, `has_any_data()`)
+- Updated cash balance calculation to use stored starting cash values
+- Added user settings management methods (`initialize_user_settings()`, `get_user_settings()`)
+- Safe database schema additions with backward compatibility
+
+### UI/UX Improvements
+- Setup wizard with clear instructions and tips
+- Visual feedback with success messages and balloons
+- Guided next steps after setup completion
+- Prominent setup prompts for new users in sidebar and dashboard
+
 ## [2.3.0] - 2025-07-23
 
 ### Added

@@ -4,8 +4,9 @@ A comprehensive Python-based portfolio tracking system for Australian Stock Exch
 
 ## Features
 
+- 🚀 **New User Onboarding**: Guided setup wizard for first-time users with configurable starting cash
 - 📊 **Portfolio Tracking**: Track multiple ASX stock positions with cost basis and P&L
-- 💰 **Cash Balance Tracking**: Real-time cash position monitoring with starting capital
+- 💰 **Cash Balance Tracking**: Real-time cash position monitoring with personalized starting capital
 - 🏛️ **Franking Credits Analysis**: Comprehensive Australian tax credit calculations
 - 💰 **CGT Analysis**: Capital Gains Tax tracking with 12-month discount calculations
 - 📈 **OHLC Analysis**: Open/High/Low/Close data collection and analysis
@@ -126,14 +127,38 @@ Configurable brokerage fee structure:
 
 ## Getting Started
 
-### First Time Setup
+### First Time Setup (New Users)
 
+**🚀 For First-Time Users - Easy Setup Wizard:**
+
+1. **Clone and install** (as above)
+2. **Launch the web interface**: `streamlit run streamlit_app.py`
+3. **Complete the setup wizard**: You'll be automatically guided through:
+   - Setting your starting cash balance (no more hardcoded $25,000!)
+   - Naming your portfolio
+   - Learning the basic workflow
+4. **Start tracking**: Add your first transaction and begin portfolio analysis
+
+**The 2-minute setup wizard will:**
+- ✅  Auto-detect that you're a new user
+- ✅  Guide you through essential configuration  
+- ✅  Set up your personalized cash balance
+- ✅  Show you exactly what to do next
+
+### Experienced Users
+
+If you're already familiar with the system:
 1. **Clone the repository**
-2. **Set up API key** (optional - uses demo mode by default)
+2. **Set up API key** (optional - uses demo mode by default)  
 3. **Install dependencies**
-4. **Add your first transaction**
+4. **Add your first transaction** directly
 
-The system includes sample data to demonstrate functionality. You can clear this and add your own transactions using the CLI or web interface.
+### Legacy Migration
+
+Existing portfolios continue to work unchanged. The system gracefully handles:
+- Previous hardcoded $25,000 starting cash amounts
+- Existing transaction history and settings
+- All current functionality without interruption
 
 ## File Structure
 
@@ -241,7 +266,7 @@ API Calls Used Today: 5/20
 PORTFOLIO OVERVIEW:
   Total Cost Basis:     $   XX,XXX.XX
   Current Market Value: $   XX,XXX.XX
-  Cash Balance:         $    X,XXX.XX
+  Cash Balance:         $    X,XXX.XX  [Configurable via Setup Wizard]
   Total Portfolio:      $   XX,XXX.XX
   Total Fees Paid:      $      XXX.XX
   Unrealized P&L:       $      XXX.XX
@@ -277,7 +302,36 @@ Potential CGT Liability: $      XXX.XX
 CGT Discount Savings:    $      XXX.XX
 ```
 
+## New User Experience
+
+### 🚀 First-Time User Flow
+
+**When you first launch the system:**
+
+1. **Auto-Detection**: System detects you're a new user (no existing data)
+2. **Welcome Screen**: Dashboard shows setup guidance instead of empty data
+3. **Setup Wizard**: Complete 2-minute configuration via `🚀 Setup` page:
+   - Configure starting cash balance (your actual amount, not hardcoded $25k)
+   - Set portfolio name for personalization
+   - Review next steps and tips
+4. **Ready to Use**: Dashboard now shows your configured portfolio
+5. **Add First Transaction**: Guided to add your first stock purchase
+
+### ⚙️ Setup Wizard Features
+
+- **Smart Defaults**: Reasonable starting values with easy customization
+- **Validation**: Input validation with helpful error messages  
+- **Visual Feedback**: Success animations and clear next steps
+- **Re-configurable**: Existing users can re-run setup to change settings
+- **Backward Compatible**: Existing portfolios unaffected by new features
+
 ## Adding Transactions
+
+### Via Web Interface (Recommended for New Users)
+1. Navigate to `💰 Add Transaction` page
+2. Fill in stock details (symbol, quantity, price, date)
+3. Preview transaction including fees
+4. Submit to add to portfolio
 
 ### Via Command Line
 ```bash

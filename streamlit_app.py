@@ -75,9 +75,21 @@ st.markdown("""
 
 # Sidebar navigation
 st.sidebar.title("Navigation")
+
+# Check if user needs setup for sidebar highlighting
+try:
+    temp_tracker = ASXPortfolioTracker()
+    is_new_user = temp_tracker.is_new_user() and not temp_tracker.has_any_data()
+except:
+    is_new_user = False
+
+if is_new_user:
+    st.sidebar.warning("🚀 Complete Setup First!")
+    st.sidebar.markdown("*Start with the Setup wizard to configure your portfolio*")
+
 page = st.sidebar.selectbox(
     "Choose a page",
-    ["🏠 Dashboard", "💰 Add Transaction", "📈 Update Prices", "📊 Performance Analysis", "📈 OHLC Analysis", "🏛️ Franking Credits", "💰 CGT Analysis", "🧮 Tax Calculator", "⚙️ Settings"]
+    ["🏠 Dashboard", "🚀 Setup", "💰 Add Transaction", "📈 Update Prices", "📊 Performance Analysis", "📈 OHLC Analysis", "🏛️ Franking Credits", "💰 CGT Analysis", "🧮 Tax Calculator", "⚙️ Settings"]
 )
 
 # Main header
@@ -85,7 +97,34 @@ st.markdown('<div class="main-header">📊 ASX Portfolio Tracker</div>', unsafe_
 
 # Dashboard Page
 if page == "🏠 Dashboard":
-    st.header("Portfolio Overview")
+    # Check if user needs setup (new user detection)
+    tracker = ASXPortfolioTracker()
+    if tracker.is_new_user() and not tracker.has_any_data():
+        # Redirect new users to setup
+        st.info("👋 Welcome! It looks like this is your first time using ASX Portfolio Tracker.")
+        st.markdown("### 🚀 Let's get you set up!")
+        st.markdown("""
+        To get started, please complete the quick setup wizard to configure your portfolio.
+        
+        **Setup takes less than 2 minutes and includes:**
+        - Setting your starting cash balance
+        - Configuring basic preferences
+        - Learning how to add transactions
+        """)
+        
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            if st.button("🚀 Start Setup Wizard", type="primary", use_container_width=True):
+                st.success("👈 Please select '🚀 Setup' from the sidebar to continue!")
+                st.balloons()
+        
+        st.markdown("---")
+        st.markdown("*Or continue to explore the interface without setup (data won't be saved)*")
+        
+        # Still show the empty dashboard below for exploration
+        st.header("Portfolio Overview (Preview Mode)")
+    else:
+        st.header("Portfolio Overview")
     
     # Get portfolio summary
     summary = get_portfolio_summary()
@@ -95,7 +134,7 @@ if page == "🏠 Dashboard":
         st.info("Use the 'Add Transaction' page to input your stock purchases.")
     else:
         # Key metrics row
-        col1, col2, col3, col4 = st.columns(4)
+        col1, col2, col3, col4, col5 = st.columns(5)
         
         with col1:
             st.metric(
@@ -106,19 +145,27 @@ if page == "🏠 Dashboard":
         
         with col2:
             st.metric(
+                "Cash Balance",
+                format_currency(summary.get('cash_balance', 0)),
+                delta="💰 Available"
+            )
+        
+        with col3:
+            total_portfolio = summary['total_market_value'] + summary.get('cash_balance', 0)
+            st.metric(
+                "Total Portfolio",
+                format_currency(total_portfolio),
+                delta=format_currency(summary['total_unrealized_pnl'])
+            )
+        
+        with col4:
+            st.metric(
                 "Total Return",
                 format_percentage(summary['return_percentage']),
                 delta=format_currency(summary['total_unrealized_pnl'])
             )
         
-        with col3:
-            st.metric(
-                "Total Cost Basis",
-                format_currency(summary['total_cost']),
-                delta=f"-{format_currency(summary['total_fees'])}"
-            )
-        
-        with col4:
+        with col5:
             api_status = "🟢 Updated" if summary['api_calls_used'] > 0 else "🟡 Cached"
             st.metric(
                 "API Status",
@@ -200,6 +247,130 @@ if page == "🏠 Dashboard":
                 st.metric("Data Range", f"{date_range[0]} to {date_range[1]}")
             else:
                 st.metric("Data Range", "No data")
+
+# Setup Wizard Page
+elif page == "🚀 Setup":
+    st.header("Welcome to ASX Portfolio Tracker! 🎉")
+    
+    # Check if user is already set up
+    tracker = ASXPortfolioTracker()
+    user_settings = tracker.get_user_settings()
+    
+    if user_settings['setup_completed']:
+        st.success("✅ Your portfolio is already set up!")
+        st.info("You can modify these settings anytime by re-running the setup wizard.")
+        
+        # Show current settings
+        st.subheader("Current Settings")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.metric("Portfolio Name", user_settings['portfolio_name'])
+            st.metric("Starting Cash", f"${user_settings['starting_cash']:,.2f}")
+        
+        with col2:
+            if user_settings['created_date']:
+                st.metric("Created", user_settings['created_date'][:10])
+            
+            # Show if there's any data
+            if tracker.has_any_data():
+                st.metric("Status", "Active Portfolio 📈")
+            else:
+                st.metric("Status", "Ready for Data 🚀")
+        
+        st.markdown("---")
+        
+        if st.button("🔄 Re-run Setup Wizard"):
+            # Allow re-setup
+            user_settings['setup_completed'] = False
+            st.rerun()
+    
+    else:
+        # First-time setup wizard
+        st.markdown("""
+        ### Let's get your portfolio set up! 🚀
+        
+        This quick setup will help you:
+        - Configure your starting cash balance
+        - Set up basic portfolio preferences  
+        - Learn how to add your first transactions
+        
+        **Takes less than 2 minutes!**
+        """)
+        
+        # Setup form
+        with st.form("setup_wizard"):
+            st.subheader("📊 Portfolio Configuration")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                portfolio_name = st.text_input(
+                    "Portfolio Name", 
+                    value="My ASX Portfolio",
+                    help="Give your portfolio a personalized name"
+                )
+                
+                starting_cash = st.number_input(
+                    "Starting Cash Balance ($)",
+                    min_value=0.0,
+                    value=25000.0,
+                    step=1000.0,
+                    help="How much cash are you starting with? This can be your actual cash balance or investment budget."
+                )
+            
+            with col2:
+                st.markdown("**💡 Quick Tips:**")
+                st.markdown("""
+                - **Starting Cash**: This tracks your available cash for investments
+                - **Portfolio Name**: Helps identify your portfolio in exports
+                - **You can change these settings later** in the Settings page
+                """)
+            
+            st.subheader("🎯 What's Next?")
+            st.markdown("""
+            After setup, you'll be able to:
+            1. **Add transactions** - Record your stock purchases and sales
+            2. **Track performance** - See real-time portfolio values
+            3. **Analyze taxes** - CGT and franking credits analysis
+            4. **Export data** - Download reports and analysis
+            """)
+            
+            # Setup completion
+            setup_submitted = st.form_submit_button("🚀 Complete Setup & Start Tracking!", type="primary")
+            
+            if setup_submitted:
+                # Validate inputs
+                if not portfolio_name.strip():
+                    st.error("Please enter a portfolio name")
+                elif starting_cash < 0:
+                    st.error("Starting cash must be positive")
+                else:
+                    # Initialize user settings
+                    tracker.initialize_user_settings(starting_cash, portfolio_name.strip())
+                    
+                    st.success("🎉 Setup Complete! Welcome to ASX Portfolio Tracker!")
+                    st.balloons()
+                    
+                    # Show next steps
+                    st.markdown("### 🎯 Ready to Start!")
+                    st.markdown("""
+                    **Your portfolio is now set up with:**
+                    - 💰 Starting Cash: ${:,.2f}
+                    - 📊 Portfolio Name: {}
+                    
+                    **Next Steps:**
+                    1. Go to **💰 Add Transaction** to record your first stock purchase
+                    2. Visit **📈 Update Prices** to get current market values  
+                    3. Check **🏠 Dashboard** to see your portfolio overview
+                    """.format(starting_cash, portfolio_name))
+                    
+                    # Auto-redirect after a moment
+                    st.info("💡 Tip: You can now navigate to 'Add Transaction' to record your first stock purchase!")
+                    
+                    # Refresh page to show dashboard
+                    if st.button("Go to Dashboard 🏠"):
+                        st.rerun()
 
 # Add Transaction Page
 elif page == "💰 Add Transaction":

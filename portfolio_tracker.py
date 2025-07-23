@@ -138,6 +138,18 @@ class ASXPortfolioTracker:
             )
         ''')
         
+        # User settings and onboarding table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS user_settings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                setup_completed BOOLEAN DEFAULT 0,
+                starting_cash REAL DEFAULT 25000.0,
+                portfolio_name TEXT DEFAULT 'My Portfolio',
+                created_date TEXT DEFAULT CURRENT_TIMESTAMP,
+                last_login TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        
         conn.commit()
         conn.close()
     
@@ -417,10 +429,16 @@ class ASXPortfolioTracker:
         ''')
         
         transactions = cursor.fetchall()
+        
+        # Get starting cash from user settings (fallback to instance variable for backward compatibility)
+        cursor.execute('SELECT starting_cash FROM user_settings ORDER BY id DESC LIMIT 1')
+        user_cash_result = cursor.fetchone()
+        starting_cash = user_cash_result[0] if user_cash_result else self.starting_cash
+        
         conn.close()
         
         # Start with initial cash balance
-        cash_balance = self.starting_cash
+        cash_balance = starting_cash
         
         for action, total, fees in transactions:
             if action == 'buy':
@@ -610,6 +628,72 @@ class ASXPortfolioTracker:
         
         print(f"Portfolio exported to {filename}")
         return filename
+    
+    def is_new_user(self) -> bool:
+        """Check if this is a new user (no setup completed)"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        # Check if user_settings table has any records with setup_completed=1
+        cursor.execute('SELECT setup_completed FROM user_settings WHERE setup_completed = 1 LIMIT 1')
+        result = cursor.fetchone()
+        conn.close()
+        
+        return result is None
+    
+    def has_any_data(self) -> bool:
+        """Check if there's any existing portfolio data"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        # Check for any transactions
+        cursor.execute('SELECT COUNT(*) FROM transactions')
+        transaction_count = cursor.fetchone()[0]
+        
+        conn.close()
+        return transaction_count > 0
+    
+    def initialize_user_settings(self, starting_cash: float = 25000.0, portfolio_name: str = "My Portfolio"):
+        """Initialize user settings for a new user"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        # Insert initial user settings
+        cursor.execute('''
+            INSERT INTO user_settings (setup_completed, starting_cash, portfolio_name)
+            VALUES (1, ?, ?)
+        ''', (starting_cash, portfolio_name))
+        
+        # Update the instance starting_cash to match
+        self.starting_cash = starting_cash
+        
+        conn.commit()
+        conn.close()
+    
+    def get_user_settings(self) -> Dict:
+        """Get current user settings"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        cursor.execute('SELECT setup_completed, starting_cash, portfolio_name, created_date FROM user_settings ORDER BY id DESC LIMIT 1')
+        result = cursor.fetchone()
+        conn.close()
+        
+        if result:
+            return {
+                'setup_completed': bool(result[0]),
+                'starting_cash': result[1],
+                'portfolio_name': result[2],
+                'created_date': result[3]
+            }
+        else:
+            # Return defaults for backward compatibility
+            return {
+                'setup_completed': False,
+                'starting_cash': 25000.0,
+                'portfolio_name': 'My Portfolio',
+                'created_date': None
+            }
 
 
 def main():
