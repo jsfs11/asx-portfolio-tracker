@@ -5,6 +5,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2025-07-23
+
+### Added
+- 📈 **OHLC Analysis System**: Complete Open/High/Low/Close data collection and analysis
+- 🎯 **Perfect Timing Analysis**: Portfolio simulation with optimal daily execution
+- 🕐 **Historical Data Collection**: Automated collection of 30-365 days of OHLC data
+- 📊 **Interactive Candlestick Charts**: Rich price action visualization with volume data
+- ⚡ **Zero-API-Call Collection**: Yahoo Finance primary with EODHD fallback strategy
+- 🔍 **Gap Filling System**: Intelligent detection and filling of missing OHLC data
+- 💰 **Missed Opportunities Tracking**: Calculate potential gains from perfect timing
+- 📈 **Volatility Analysis**: Daily price range and trading opportunity identification
+- 🤖 **Automated Ticker Integration**: One-command setup for new ASX stocks with full data population
+- 🎛️ **OHLC Dashboard**: Dedicated web interface with 4 analysis tabs
+
+### Enhanced
+- **Streamlit Interface**: New "📈 OHLC Analysis" page with portfolio optimization insights
+- **API Efficiency**: Yahoo Finance prioritized to save EODHD API calls (18/20 calls saved)
+- **Data Export**: Enhanced ZIP export now includes OHLC historical data
+- **Portfolio Analysis**: Perfect timing simulation showing potential portfolio improvements
+- **Stock Analysis**: Individual stock volatility and optimal pricing analysis
+
+### Technical
+- New `ohlc_collector.py` module with comprehensive OHLC data management
+- New `ohlc_dashboard.py` with advanced visualization components
+- New `add_new_ticker.py` for automated ticker integration
+- Database schema extensions for OHLC storage (`daily_ohlc`, `optimal_pricing_analysis`)
+- Yahoo Finance integration with period-based historical data fetching
+- Configurable data retention and cleanup systems
+
+### CLI Enhancements
+- `python ohlc_collector.py --historical 30`: Collect 30 days of historical data
+- `python ohlc_collector.py --fill-gaps`: Fill missing data automatically
+- `python ohlc_collector.py --save-api-calls`: Yahoo Finance only mode
+- `python add_new_ticker.py CHN`: Automated ticker setup with data population
+
 ## [2.2.1] - 2025-07-17
 
 ### Fixed

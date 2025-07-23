@@ -77,7 +77,7 @@ st.markdown("""
 st.sidebar.title("Navigation")
 page = st.sidebar.selectbox(
     "Choose a page",
-    ["🏠 Dashboard", "💰 Add Transaction", "📈 Update Prices", "📊 Performance Analysis", "🏛️ Franking Credits", "💰 CGT Analysis", "🧮 Tax Calculator", "⚙️ Settings"]
+    ["🏠 Dashboard", "💰 Add Transaction", "📈 Update Prices", "📊 Performance Analysis", "📈 OHLC Analysis", "🏛️ Franking Credits", "💰 CGT Analysis", "🧮 Tax Calculator", "⚙️ Settings"]
 )
 
 # Main header
@@ -398,7 +398,7 @@ elif page == "📊 Performance Analysis":
         # Export options
         export_option = st.selectbox(
             "Choose export format",
-            ["Portfolio Summary CSV", "Transaction History CSV", "Performance Data CSV"]
+            ["Portfolio Summary CSV", "Transaction History CSV", "Performance Data CSV", "Export All Data (ZIP)"]
         )
         
         if st.button("Export Data"):
@@ -438,11 +438,81 @@ elif page == "📊 Performance Analysis":
                     else:
                         st.warning("No transaction data to export")
                 
-                else:  # Performance Data CSV
+                elif export_option == "Performance Data CSV":
                     st.info("Performance data export will be available when more historical data is collected")
+                
+                else:  # Export All Data (ZIP)
+                    # Export all database tables as separate CSV files in a ZIP
+                    import zipfile
+                    import io
+                    from tempfile import NamedTemporaryFile
+                    
+                    with NamedTemporaryFile(delete=False, suffix='.zip') as tmp_file:
+                        with zipfile.ZipFile(tmp_file.name, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+                            # Connect to database
+                            conn = sqlite3.connect('portfolio.db')
+                            
+                            # Export each table as CSV
+                            tables = [
+                                'transactions',
+                                'price_history', 
+                                'dividends',
+                                'dividend_payments',
+                                'tax_parcels',
+                                'cgt_events',
+                                'capital_losses',
+                                'tax_settings'
+                            ]
+                            
+                            for table in tables:
+                                try:
+                                    df = pd.read_sql_query(f"SELECT * FROM {table}", conn)
+                                    if not df.empty:
+                                        csv_buffer = io.StringIO()
+                                        df.to_csv(csv_buffer, index=False)
+                                        zip_file.writestr(f"{table}.csv", csv_buffer.getvalue())
+                                except Exception as e:
+                                    # Table might not exist, skip it
+                                    continue
+                            
+                            # Export current portfolio summary
+                            summary = get_portfolio_summary()
+                            positions_df = create_positions_table(summary)
+                            if not positions_df.empty:
+                                csv_buffer = io.StringIO()
+                                positions_df.to_csv(csv_buffer, index=False)
+                                zip_file.writestr("current_portfolio.csv", csv_buffer.getvalue())
+                            
+                            conn.close()
+                        
+                        # Read the zip file for download
+                        with open(tmp_file.name, 'rb') as f:
+                            zip_data = f.read()
+                        
+                        st.download_button(
+                            label="Download All Data (ZIP)",
+                            data=zip_data,
+                            file_name=f"portfolio_all_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.zip",
+                            mime="application/zip"
+                        )
+                        
+                        # Clean up
+                        import os
+                        os.unlink(tmp_file.name)
                     
             except Exception as e:
                 st.error(f"Export error: {str(e)}")
+
+# OHLC Analysis Page
+elif page == "📈 OHLC Analysis":
+    try:
+        from ohlc_dashboard import create_ohlc_dashboard
+        create_ohlc_dashboard()
+    except ImportError as e:
+        st.error(f"OHLC Analysis not available: {e}")
+        st.info("Make sure ohlc_dashboard.py is in the same directory")
+    except Exception as e:
+        st.error(f"OHLC Analysis error: {e}")
 
 # Franking Credits Page
 elif page == "🏛️ Franking Credits":

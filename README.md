@@ -8,17 +8,21 @@ A comprehensive Python-based portfolio tracking system for Australian Stock Exch
 - 💰 **Cash Balance Tracking**: Real-time cash position monitoring with starting capital
 - 🏛️ **Franking Credits Analysis**: Comprehensive Australian tax credit calculations
 - 💰 **CGT Analysis**: Capital Gains Tax tracking with 12-month discount calculations
+- 📈 **OHLC Analysis**: Open/High/Low/Close data collection and analysis
+- 🎯 **Perfect Timing Analysis**: Optimal pricing simulation and missed opportunities
+- 🕐 **Historical Data**: Automated collection of 30-365 days of historical OHLC data
 - 💰 **Fee Calculation**: Automatic brokerage fee calculation
-- 📈 **Real-time Prices**: EODHD API integration with demo mode fallback
+- 📈 **Real-time Prices**: EODHD API integration with Yahoo Finance fallback
 - 💵 **Dividend Tracking**: Monitor dividend yields and estimated income
 - 🧮 **Tax Calculator**: Interactive tax optimization with franking benefits
 - 📱 **Dual Interface**: Command line tools and modern web interface
 - 💾 **Data Persistence**: SQLite database for transaction and price history
-- 📤 **Export Functionality**: CSV export for portfolio and transaction data
+- 📤 **Export Functionality**: Complete data export including OHLC history
 - 📊 **Performance Analysis**: Advanced analytics and risk metrics
-- 📈 **Interactive Charts**: Plotly-based visualizations with export capabilities
+- 📈 **Interactive Charts**: Candlestick charts with volatility analysis
 - 🎯 **Sector Analysis**: Proper GICS sector classifications for all stocks
 - 🔒 **Secure Configuration**: Environment-based API key management
+- 🤖 **Automated Ticker Integration**: One-command setup for new ASX stocks
 
 ## Quick Start
 
@@ -84,6 +88,19 @@ python3 portfolio_dashboard.py --add
 
 # Export portfolio data
 python3 portfolio_dashboard.py --export
+
+# Add new ASX ticker with automated data collection
+python3 add_new_ticker.py CHN
+
+# Collect OHLC data for analysis
+python3 ohlc_collector.py --enable
+python3 ohlc_collector.py --all --save-api-calls
+
+# Collect historical OHLC data (30 days recommended)
+python3 ohlc_collector.py --historical 30 --save-api-calls
+
+# Fill missing OHLC data gaps
+python3 ohlc_collector.py --fill-gaps
 ```
 
 ## Configuration
@@ -126,6 +143,9 @@ asx-portfolio-tracker/
 ├── dividend_tracker.py        # Dividend analysis and tracking
 ├── franking_calculator.py     # Franking credits and tax analysis
 ├── cgt_calculator.py          # Capital Gains Tax calculations
+├── ohlc_collector.py          # OHLC data collection and analysis
+├── ohlc_dashboard.py          # OHLC web interface components
+├── add_new_ticker.py          # Automated ticker integration tool
 ├── portfolio_dashboard.py     # Command-line interface
 ├── portfolio_vs_asx200.py     # Portfolio vs ASX200 comparison
 ├── performance_attribution.py # Stock contribution analysis
@@ -175,12 +195,21 @@ asx-portfolio-tracker/
 - Data export functionality
 - Force API update capability
 
+### OHLC Analysis System
+- **Automated Data Collection**: Zero-API-call historical data via Yahoo Finance
+- **Perfect Timing Simulation**: Calculate optimal buy/sell opportunities
+- **Volatility Analysis**: Track daily price ranges and trading opportunities
+- **Candlestick Charts**: Interactive OHLC visualization with volume data
+- **Gap Filling**: Intelligent detection and filling of missing data
+- **Historical Periods**: 7 days to 1 year of historical OHLC data
+
 ### Performance Analysis
 - Portfolio performance tracking over time
 - Interactive plotly charts (HTML + PNG output)
 - Risk-adjusted performance metrics
 - Attribution analysis for individual stocks
 - Rolling performance windows
+- OHLC-based perfect timing analysis
 
 ## API Sources
 

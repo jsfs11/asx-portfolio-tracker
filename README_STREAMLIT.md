@@ -51,7 +51,30 @@ streamlit run streamlit_app.py
 - **ASX200 Comparison**: Interactive benchmark charts
 - **Attribution Analysis**: Which stocks help/hurt performance
 - **Rolling Performance**: 1D, 7D, 30D trend analysis
-- **Export Functions**: CSV downloads for all data
+- **Export Functions**: 
+  - Portfolio Summary CSV
+  - Transaction History CSV
+  - **Export All Data (ZIP)**: Complete database export with all tables
+    - All 15+ transactions
+    - All 80+ price data points
+    - Tax parcels for CGT tracking
+    - Dividend data and payments
+    - Current portfolio positions
+
+### 📈 **OHLC Analysis** (New!)
+- **Portfolio OHLC Overview**: Volatility metrics and data coverage for all stocks
+- **Perfect Timing Analysis**: 
+  - Current vs optimal portfolio value comparison
+  - Missed opportunities breakdown by stock
+  - Potential improvement calculations
+- **Individual Stock Analysis**:
+  - Interactive candlestick charts with 30+ days of data
+  - Daily volatility analysis and price range tracking
+  - Recent OHLC data tables with optimal pricing insights
+- **Historical Data Management**:
+  - One-click OHLC collection (saves API calls using Yahoo Finance)
+  - Automated gap filling for missing data
+  - 30-365 days of historical data collection
 
 ### 🏛️ **Franking Credits**
 - **Comprehensive Tax Analysis**: Annual franking credits calculations
@@ -59,6 +82,13 @@ streamlit run streamlit_app.py
 - **Interactive Visualizations**: Bar charts and sector pie charts
 - **Sector Analysis**: Franking distribution across portfolio sectors
 - **Export Functionality**: CSV downloads with franking data
+
+### 💰 **CGT Analysis**
+- **Unrealised Gains**: Real-time capital gains/losses with CGT discount eligibility
+- **Tax Year Selection**: Analyze any financial year from 2020-onwards
+- **Tax Optimization**: Identify tax loss harvesting and CGT discount opportunities
+- **Visual Analysis**: Interactive charts showing gross vs after-discount gains
+- **FIFO Tracking**: Automatic first-in-first-out tax parcel management
 
 ### 🧮 **Tax Calculator**
 - **Interactive Tax Settings**: Configure income and tax parameters
@@ -174,12 +204,19 @@ Users just need to:
 | Portfolio tracking | ✅ | ✅ |
 | Cash balance tracking | ✅ | ✅ |
 | Franking credits analysis | ✅ | ✅ |
+| CGT analysis | ✅ | ✅ |
+| **OHLC analysis** | ✅ | **✅ Enhanced** |
+| **Perfect timing simulation** | ❌ | ✅ |
+| **Candlestick charts** | ❌ | ✅ |
+| **Historical data collection** | ✅ | ✅ |
 | Tax calculator | ❌ | ✅ |
 | Price updates | ✅ | ✅ |
 | Performance analysis | ✅ | ✅ |
-| Data export | ✅ | ✅ |
+| Data export | Basic CSV | **Complete ZIP Export** |
 | Interactive charts | ❌ | ✅ |
 | Sector visualizations | ❌ | ✅ |
+| Tax optimization suggestions | ❌ | ✅ |
+| Real-time calculations | ❌ | ✅ |
 | User interface | Terminal | Modern Web |
 | Ease of use | Technical | User-friendly |
 | Sharing | Screenshots | Live demo |
