@@ -11,35 +11,38 @@ from plotly.subplots import make_subplots  # type: ignore
 import plotly.express as px  # type: ignore
 from datetime import datetime
 import numpy as np
+from portfolio_tracker import ASXPortfolioTracker  # Import for consistent pricing
 
 def calculate_stock_contributions():
     """Calculate each stock's contribution to total portfolio performance"""
     
-    # Connect to database
+    # Use ASXPortfolioTracker for consistent price retrieval (same as CLI dashboard)
+    tracker = ASXPortfolioTracker()
+    
+    # Force price update to ensure we have current prices (same as CLI --update)
+    positions = tracker.update_current_prices(use_api=False, force=False)
+    
+    # Convert to DataFrame format for existing analysis logic
+    positions_data = []
+    latest_price_data = []
+    
+    for stock, pos in positions.items():
+        positions_data.append({
+            'stock': stock,
+            'quantity': pos.quantity,
+            'total_cost': pos.avg_cost * pos.quantity,
+            'avg_cost': pos.avg_cost  # Add avg_cost explicitly for return calculation
+        })
+        latest_price_data.append({
+            'stock': stock,
+            'current_price': pos.current_price
+        })
+    
+    positions_df = pd.DataFrame(positions_data)
+    latest_prices_df = pd.DataFrame(latest_price_data)
+    
+    # Connect to database for historical data only
     conn = sqlite3.connect('portfolio.db')
-    
-    # Get current positions
-    positions_df = pd.read_sql_query("""
-        SELECT 
-            stock,
-            SUM(CASE WHEN action = 'buy' THEN quantity ELSE -quantity END) as quantity,
-            SUM(CASE WHEN action = 'buy' THEN total + fees ELSE -(total - fees) END) as total_cost
-        FROM transactions 
-        WHERE status = 'executed'
-        GROUP BY stock
-        HAVING quantity > 0
-    """, conn)
-    
-    # Get latest prices
-    latest_prices_df = pd.read_sql_query("""
-        SELECT DISTINCT stock, price as current_price
-        FROM price_history ph1
-        WHERE date = (
-            SELECT MAX(date) 
-            FROM price_history ph2 
-            WHERE ph2.stock = ph1.stock
-        )
-    """, conn)
     
     # Get initial prices (first available price for each stock)
     initial_prices_df = pd.read_sql_query("""
@@ -54,18 +57,47 @@ def calculate_stock_contributions():
     
     conn.close()
     
-    # Merge all data
+    # Debug: Check if we have data
+    if positions_df.empty:
+        print("ERROR: No positions data found!")
+        return pd.DataFrame()
+    
+    if latest_prices_df.empty:
+        print("ERROR: No price data found!")
+        return pd.DataFrame()
+    
+    # Merge price data (we already have avg_cost from positions, so skip the initial_prices merge)
     attribution_df = positions_df.merge(latest_prices_df, on='stock', how='left')
-    attribution_df = attribution_df.merge(initial_prices_df, on='stock', how='left')
+    
+    # Debug: Check for missing price data
+    missing_prices = attribution_df[attribution_df['current_price'].isna()]
+    if not missing_prices.empty:
+        print(f"WARNING: Missing current prices for: {missing_prices['stock'].tolist()}")
+    
+    # Fill NaN prices with 0 temporarily to debug
+    attribution_df['current_price'] = attribution_df['current_price'].fillna(0)
     
     # Calculate metrics for each stock
-    attribution_df['avg_cost'] = attribution_df['total_cost'] / attribution_df['quantity']
     attribution_df['current_value'] = attribution_df['quantity'] * attribution_df['current_price']
     attribution_df['unrealized_pnl'] = attribution_df['current_value'] - attribution_df['total_cost']
-    attribution_df['return_pct'] = (attribution_df['current_price'] / attribution_df['avg_cost'] - 1) * 100
+    
+    # Only calculate returns for stocks with valid prices
+    attribution_df['return_pct'] = 0.0
+    valid_prices = attribution_df['current_price'] > 0
+    attribution_df.loc[valid_prices, 'return_pct'] = (
+        (attribution_df.loc[valid_prices, 'current_price'] / attribution_df.loc[valid_prices, 'avg_cost'] - 1) * 100
+    )
     
     # Calculate weight in portfolio
     total_portfolio_value = attribution_df['current_value'].sum()
+    if total_portfolio_value <= 0:
+        print(f"ERROR: Total portfolio value is still {total_portfolio_value}")
+        print("ERROR: This means current_price values are all 0 or NaN")
+        # Return a placeholder DataFrame so we can see what's wrong
+        attribution_df['weight'] = 0.0
+        attribution_df['contribution_to_return'] = 0.0
+        return attribution_df
+    
     attribution_df['weight'] = attribution_df['current_value'] / total_portfolio_value * 100
     
     # Calculate contribution to total return
