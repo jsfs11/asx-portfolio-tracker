@@ -503,9 +503,7 @@ elif page == "📈 Update Prices":
     col1, col2 = st.columns(2)
 
     with col1:
-        if st.button(
-            "🔄 Update Prices", help="Update prices using available API calls"
-        ):
+        if st.button("🔄 Update Prices", help="Update prices using available API calls"):
             with st.spinner("Updating prices..."):
                 success, message = update_prices()
 

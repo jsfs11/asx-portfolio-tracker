@@ -385,7 +385,9 @@ def create_ohlc_dashboard():
 
     # Check if OHLC data is available
     if not dashboard.collector.is_enabled():
-        st.warning("⚠️ OHLC collection is disabled. Enable it to access these features.")
+        st.warning(
+            "⚠️ OHLC collection is disabled. Enable it to access these features."
+        )
         if st.button("Enable OHLC Collection"):
             conn = sqlite3.connect("portfolio.db")
             cursor = conn.cursor()

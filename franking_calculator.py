@@ -398,7 +398,6 @@ class StaticFrankingDatabase:
                 keyword in combined_text
                 for keyword in ["dividend", "franking", "franked", "distribution"]
             ):
-
                 # Extract franking percentage using regex patterns
                 franking_patterns = [
                     r"(\d+)%\s*franked",

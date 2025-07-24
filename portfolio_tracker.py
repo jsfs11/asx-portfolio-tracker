@@ -66,12 +66,12 @@ class ASXPortfolioTracker:
 
         # Initialize franking calculator if available
         if FRANKING_AVAILABLE:
-            self.franking_calculator: Optional[FrankingTaxCalculator] = (
-                FrankingTaxCalculator(self.db_path)
-            )
-            self.franking_db: Optional[StaticFrankingDatabase] = (
-                StaticFrankingDatabase()
-            )
+            self.franking_calculator: Optional[
+                FrankingTaxCalculator
+            ] = FrankingTaxCalculator(self.db_path)
+            self.franking_db: Optional[
+                StaticFrankingDatabase
+            ] = StaticFrankingDatabase()
         else:
             self.franking_calculator = None
             self.franking_db = None

@@ -751,9 +751,7 @@ class OHLCCollector:
             missing_dates = self.get_missing_dates(stock, 30)  # Check last 30 days
 
             if missing_dates:
-                logger.info(
-                    f"📥 Filling {len(missing_dates)} missing dates for {stock}"
-                )
+                logger.info(f"📥 Filling {len(missing_dates)} missing dates for {stock}")
                 filled_count = 0
 
                 for date in missing_dates:
