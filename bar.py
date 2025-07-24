@@ -15,7 +15,7 @@ data = [
     {"Stock": "DTR", "Market Value": 1641.42},
     {"Stock": "CBA", "Market Value": 1429.76},
     {"Stock": "WOW", "Market Value": 1240.00},
-    {"Stock": "WAX", "Market Value": 1033.32}
+    {"Stock": "WAX", "Market Value": 1033.32},
 ]
 df = pd.DataFrame(data)
 
@@ -23,6 +23,7 @@ df = pd.DataFrame(data)
 df = df.sort_values(by="Market Value", ascending=False)
 
 # Abbreviate Market Value for y-axis ticks and hover
+
 
 def abbreviate(val):
     if val >= 1_000_000_000:
@@ -34,12 +35,24 @@ def abbreviate(val):
     else:
         return f"{val:.2f}"
 
+
 # Custom y-tick labels
 y_tickvals = df["Market Value"].tolist()
 y_ticktext = [abbreviate(v) for v in y_tickvals]
 
 # Brand colors
-colors = ['#1FB8CD', '#FFC185', '#ECEBD5', '#5D878F', '#D2BA4C', '#B4413C', '#964325', '#944454', '#13343B', '#DB4545']
+colors = [
+    "#1FB8CD",
+    "#FFC185",
+    "#ECEBD5",
+    "#5D878F",
+    "#D2BA4C",
+    "#B4413C",
+    "#964325",
+    "#944454",
+    "#13343B",
+    "#DB4545",
+]
 
 fig = px.bar(
     df,
@@ -47,18 +60,14 @@ fig = px.bar(
     y="Market Value",
     color_discrete_sequence=colors,
     labels={"Stock": "Ticker", "Market Value": "Mkt Val (AUD)"},
-    title="Portfolio Mkt Value by Ticker"
+    title="Portfolio Mkt Value by Ticker",
 )
 
-fig.update_yaxes(
-    title_text="Mkt Val (AUD)",
-    tickvals=y_tickvals,
-    ticktext=y_ticktext
-)
+fig.update_yaxes(title_text="Mkt Val (AUD)", tickvals=y_tickvals, ticktext=y_ticktext)
 fig.update_xaxes(title_text="Ticker")
 
 fig.update_layout(
-    legend=dict(orientation='h', yanchor='bottom', y=1.05, xanchor='center', x=0.5)
+    legend=dict(orientation="h", yanchor="bottom", y=1.05, xanchor="center", x=0.5)
 )
 
-fig.write_image('portfolio_market_value.png')
+fig.write_image("portfolio_market_value.png")
